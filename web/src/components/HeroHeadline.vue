@@ -33,6 +33,11 @@ const segments = computed<NarrativeSegment[]>(() =>
 
 const aboutOpen = ref(false)
 const noteButton = ref<HTMLButtonElement | null>(null)
+
+function closeAbout() {
+  aboutOpen.value = false
+  noteButton.value?.focus()
+}
 </script>
 
 <template>
@@ -58,7 +63,7 @@ const noteButton = ref<HTMLButtonElement | null>(null)
         </svg>
         {{ preset.disclaimerShort }}
       </button>
-      <AboutPopover v-if="aboutOpen" :anchor="noteButton" @close="aboutOpen = false" />
+      <AboutPopover v-if="aboutOpen" :anchor="noteButton" @close="closeAbout" />
     </span>
   </div>
 </template>

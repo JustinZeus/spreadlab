@@ -21,7 +21,10 @@ function menuButtons(): HTMLButtonElement[] {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
+  if (event.key === 'Escape' || event.key === 'Tab') {
+    // Tab closes like Esc instead of leaking focus behind the menu; the
+    // opener restores focus and the next Tab continues from there.
+    event.preventDefault()
     emit('close')
     return
   }
