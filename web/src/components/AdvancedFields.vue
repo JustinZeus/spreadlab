@@ -48,10 +48,12 @@ function setField(field: keyof Config, event: Event) {
   if (Number.isFinite(nextValue)) store.setBaseField(field, nextValue)
 }
 
+// Seeds are just names for worlds; a small range keeps the fields and
+// shared URLs readable while still giving plenty of distinct worlds.
 function freshSeed(): number {
   const buffer = new Uint32Array(1)
   crypto.getRandomValues(buffer)
-  return buffer[0] ?? 0
+  return (buffer[0] ?? 0) % 10000
 }
 
 function reroll(field: keyof Config) {
