@@ -22,6 +22,7 @@ const failed = computed(() => store.state.failedPanelIds.has(props.panel.id))
 const menuItems = computed<PanelMenuItem[]>(() => [
   { key: 'edit', label: 'Edit' },
   { key: 'rename', label: 'Rename' },
+  { key: 'focus', label: 'Focus' },
   { key: 'duplicate', label: 'Duplicate', disabled: store.state.panels.length >= MAX_PANELS },
   { key: 'remove', label: 'Remove', disabled: store.state.panels.length <= 1 },
 ])
@@ -33,6 +34,9 @@ function onMenuSelect(itemKey: string) {
     case 'rename':
       focusLabelOnOpen.value = itemKey === 'rename'
       store.state.editingPanelId = props.panel.id
+      break
+    case 'focus':
+      store.setFocusPanel(props.panel.id)
       break
     case 'duplicate':
       store.duplicatePanel(props.panel.id)
@@ -136,7 +140,14 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
       <div class="chips">
         <span v-for="chip in chips" :key="chip.key" class="chip">{{ chip.text }}</span>
       </div>
-      <NetworkView :panel="panel" />
+      <button
+        class="netbtn"
+        type="button"
+        :aria-label="`Enlarge ${panel.label}`"
+        @click="store.setFocusPanel(panel.id)"
+      >
+        <NetworkView :panel="panel" />
+      </button>
     </template>
     <template v-else>
       <div class="skeleton" aria-hidden="true">
@@ -271,6 +282,16 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
   margin-top: 9px;
   min-height: 22px;
   flex-wrap: wrap;
+}
+
+.netbtn {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: zoom-in;
+  border-radius: 8px;
 }
 
 .chip {

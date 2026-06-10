@@ -9,6 +9,10 @@ import { useSimStore } from '@/composables/useSimStore'
 // and Home/End work globally except in text inputs; on the scrubber the
 // browser handles them natively.
 
+// The modal docks a second PlayerBar over the same store; only the page
+// instance owns the global keyboard map so keys are not handled twice.
+const props = withDefaults(defineProps<{ globalKeys?: boolean }>(), { globalKeys: true })
+
 const store = useSimStore()
 const playback = usePlayback()
 
@@ -62,8 +66,12 @@ function onGlobalKeydown(event: KeyboardEvent) {
   }
 }
 
-onMounted(() => document.addEventListener('keydown', onGlobalKeydown))
-onBeforeUnmount(() => document.removeEventListener('keydown', onGlobalKeydown))
+onMounted(() => {
+  if (props.globalKeys) document.addEventListener('keydown', onGlobalKeydown)
+})
+onBeforeUnmount(() => {
+  if (props.globalKeys) document.removeEventListener('keydown', onGlobalKeydown)
+})
 </script>
 
 <template>
