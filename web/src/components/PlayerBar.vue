@@ -335,5 +335,16 @@ input[type='range']::-moz-range-thumb {
   .player .iconbtn.step {
     display: none;
   }
+
+  /* 44 px touch targets (spec section 8). */
+  .iconbtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .iconbtn.play {
+    width: 48px;
+    height: 48px;
+  }
 }
 </style>

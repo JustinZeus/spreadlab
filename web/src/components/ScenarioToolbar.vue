@@ -24,9 +24,15 @@ function addScenario() {
     <h2>Scenarios</h2>
     <span v-if="refreshing" class="spinner" role="status" aria-label="Updating scenarios" />
     <span class="grow" />
-    <button class="btn" type="button" disabled title="Export arrives in a later slice">
+    <button
+      class="btn export"
+      type="button"
+      disabled
+      title="Export arrives in a later slice"
+      aria-label="Export"
+    >
       <svg class="ic" viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" /></svg>
-      Export
+      <span class="btn-text">Export</span>
     </button>
     <button
       class="btn primary"
@@ -115,6 +121,16 @@ h2 {
 @media (max-width: 760px) {
   .toolbar {
     margin-top: 16px;
+  }
+
+  /* Keep the toolbar one row down to 320 px: Export collapses to an icon
+     and the buttons grow to comfortable touch targets. */
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn.export .btn-text {
+    display: none;
   }
 }
 </style>

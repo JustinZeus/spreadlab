@@ -7,6 +7,7 @@ import FocusModal from '@/components/FocusModal.vue'
 import FooterDisclaimer from '@/components/FooterDisclaimer.vue'
 import HeroHeadline from '@/components/HeroHeadline.vue'
 import LegendRow from '@/components/LegendRow.vue'
+import MobileScoreStrip from '@/components/MobileScoreStrip.vue'
 import NodeTooltip from '@/components/NodeTooltip.vue'
 import PanelGrid from '@/components/PanelGrid.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
@@ -31,6 +32,7 @@ onMounted(async () => {
   <AppBar />
   <main class="page">
     <HeroHeadline />
+    <MobileScoreStrip />
     <ScenarioToolbar />
     <ErrorBanner />
     <PanelGrid />

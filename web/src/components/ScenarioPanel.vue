@@ -94,7 +94,7 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
 </script>
 
 <template>
-  <section class="panel" :class="{ dimmed }" :aria-label="panel.label">
+  <section :id="`panel-${panel.id}`" class="panel" :class="{ dimmed }" :aria-label="panel.label">
     <div class="head">
       <span class="swatch" :style="{ background: accent }" aria-hidden="true" />
       <span class="label">{{ panel.label }}</span>
@@ -338,6 +338,20 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
 @keyframes shimmer {
   to {
     background-position: -200% 0;
+  }
+}
+
+@media (max-width: 760px) {
+  /* 44 px touch target for the kebab (spec section 8). */
+  .kebab {
+    min-width: 44px;
+    min-height: 44px;
+    margin-right: -12px;
+  }
+
+  /* Anchor target lands below the sticky app bar plus score strip. */
+  .panel {
+    scroll-margin-top: 128px;
   }
 }
 </style>
