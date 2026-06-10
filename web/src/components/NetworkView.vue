@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { layoutForGraph, NETWORK_VIEW_HEIGHT, NETWORK_VIEW_WIDTH } from '@/composables/useLayout'
+import { ROUND_MS } from '@/composables/usePlayback'
 import { useSimStore } from '@/composables/useSimStore'
 import { graphKey } from '@/lib/graph'
 import type { PanelSpec } from '@/presets/types'
@@ -50,16 +51,24 @@ function edgeEnd(edge: number[], side: 0 | 1) {
   return layout.value[edge[side] ?? 0] ?? { x: 0, y: 0 }
 }
 
-// A small deterministic stagger inside the round so the pops read as a
-// wave instead of one synchronized blink. Stays well inside the 700 ms
-// round cadence (250 ms pop + at most 150 ms delay).
+// The fade-in spans the whole round interval (scaled with playback speed)
+// and each node starts at a small deterministic offset, so during playback
+// something is always in motion; there is never a finished still frame
+// between rounds.
+const popDurationMs = computed(() => ROUND_MS / store.state.speed)
+
 function popDelay(nodeIndex: number): string {
-  return `${(nodeIndex * 37) % 150}ms`
+  return `${((nodeIndex * 37) % 150) / store.state.speed}ms`
 }
 </script>
 
 <template>
-  <svg class="net" :viewBox="`0 0 ${NETWORK_VIEW_WIDTH} ${NETWORK_VIEW_HEIGHT}`" aria-hidden="true">
+  <svg
+    class="net"
+    :viewBox="`0 0 ${NETWORK_VIEW_WIDTH} ${NETWORK_VIEW_HEIGHT}`"
+    :style="{ '--pop-ms': `${popDurationMs}ms` }"
+    aria-hidden="true"
+  >
     <line
       v-for="(edge, edgeIndex) in edges"
       :key="edgeIndex"
@@ -116,19 +125,19 @@ function popDelay(nodeIndex: number): string {
   margin-top: 4px;
 }
 
-/* Nodes reached this round pop in: scale 0.6 to 1.0 plus fade, 250 ms
-   ease-out (spec 5.4). The global reduced-motion rule collapses this to a
-   discrete swap. */
+/* Nodes reached this round fade and scale in across the full round
+   interval (driven by --pop-ms), so playback reads as continuous motion.
+   The global reduced-motion rule collapses this to a discrete swap. */
 .pop {
-  animation: pop 250ms ease-out backwards;
+  animation: pop var(--pop-ms, 650ms) ease-out backwards;
   transform-box: fill-box;
   transform-origin: center;
 }
 
 @keyframes pop {
   from {
-    transform: scale(0.6);
-    opacity: 0.2;
+    transform: scale(0.5);
+    opacity: 0;
   }
 
   to {
