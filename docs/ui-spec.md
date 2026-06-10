@@ -39,6 +39,8 @@ interface StudyPreset {
                               // reached% (same formatter as the panels)
   disclaimerShort: string     // badge text: "Illustrative model, not validated"
   disclaimerLong: string      // About popover body (2-4 sentences)
+  readingCaption: string      // one quiet line under the legend explaining
+                              // how to read the dots (added 2026-06-10)
   toneThresholdPct: number    // reached% <= threshold renders "good" (teal),
                               // above renders "bad" (rose); 30 for this study
   base: Config                // from generated types, the default world
@@ -243,7 +245,9 @@ Every interaction lists trigger, behavior, and states.
 ### 5.3 Seed rerolls
 - Trigger: dice button next to a seed field (graph seed "Friendship
   network", threshold seed "Who resists", education seed "Random picks").
-- Behavior: set that seed to a fresh random uint32, then as 5.2. Rerolling
+- Behavior: set that seed to a fresh random value in 0-9999 (amended
+  2026-06-10: a full uint32 made fields and URLs unreadable), then as 5.2.
+  Rerolling
   the graph seed invalidates the layout cache for affected panels; the new
   layout fades in (200 ms opacity crossfade, skipped under reduced
   motion). A text button "Reroll world" rerolls all three seeds at once.
@@ -252,13 +256,20 @@ Every interaction lists trigger, behavior, and states.
 ### 5.4 Playback
 - Trigger: autoplay once after first successful load; afterwards only via
   player controls.
-- Behavior: rounds advance every 700 ms at 1x (speed pill cycles 0.5x,
-  1x, 2x). Within a round, nodes reached that round transition from their
-  resting state to rose: scale 0.6 to 1.0 plus fade, 250 ms ease-out.
-  Educated rings are visible from round 0 (they exist before the spread).
-  Panels whose run ended before the global max round hold their final
-  state. At the end, playback stops on the final round (no loop), play
-  button becomes replay affordance.
+- Behavior (amended 2026-06-10 after live review): rounds advance every
+  1000 ms at 1x (speed pill cycles 0.5x, 1x, 2x). Within a round, each
+  node reached that round gets its own deterministic appearance moment
+  (full-avalanche hash of the node index) spread across the first 95% of
+  the interval; its unreached dot stays put until that exact frame, then
+  the rose dot fades and scales in (0.5 to 1.0) over 30% of the interval.
+  A round therefore reads as a continuous trickle, never a cohort blink.
+  The panel percentage, reached count, mobile strip, and focus modal
+  count via the same predicate, so the numbers tick up live exactly as
+  dots appear. Educated rings are visible from round 0 (they exist before
+  the spread). Panels whose run ended before the global max round hold
+  their final state. At the end, playback stops on the final round (no
+  loop), play button becomes replay affordance. The hero keeps the final
+  outcomes (its sentence claims outcomes, not playback state).
 - Player controls: replay (jump to round 0 and play), step back, play /
   pause toggle, step forward, scrubber (one tick per round, drag or click
   to seek; seeking pauses), round counter "Round 4 of 9" (global max),
@@ -270,7 +281,7 @@ Every interaction lists trigger, behavior, and states.
   `aria-valuetext="Round 4 of 9"`.
 - Reduced motion (`prefers-reduced-motion: reduce`): no autoplay, page
   loads at the final round; play still works but rounds swap discretely
-  (no tween, no scale); the 700 ms cadence becomes 1000 ms at 1x.
+  (no tween, no scale); the 1000 ms cadence becomes 1200 ms at 1x.
 - States: round state is global and drives every panel, the chart
   playhead, and the modal simultaneously. Round is not stored in the URL.
 
@@ -419,12 +430,15 @@ mockup. Spacing on an 8 px-ish scale as in the mockup; page max-width
 Number formatting: one shared `formatPct` (round to whole percent) used by
 hero, panels, strip, chart labels, and table. No other rounding anywhere.
 
-Network rendering: inline SVG (not canvas). Layout via d3-force
-(`forceLink`, `forceManyBody`, `forceCenter`, collision), run
-synchronously for a fixed 300 ticks with `simulation.randomSource(
-mulberry32(graphSeed))` and seeded initial positions, so identical configs
-give identical pictures on every machine (the shared-URL guarantee).
-Layout results cached per graph hash.
+Network rendering: inline SVG (not canvas), viewBox 380x230 (amended
+2026-06-10: taller than the mockup's 190 for breathing room). Layout via
+d3-force (`forceLink`, `forceManyBody`, collision, plus anisotropic
+`forceX`/`forceY` pulls so the cloud settles into the wide card shape
+organically and the fit stays uniform-scale; axis stretching reads as
+line patterns), run synchronously for a fixed 300 ticks with
+`simulation.randomSource(mulberry32(graphSeed))` and seeded initial
+positions, so identical configs give identical pictures on every machine
+(the shared-URL guarantee). Layout results cached per graph hash.
 
 ---
 
