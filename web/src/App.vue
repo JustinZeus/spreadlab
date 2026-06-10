@@ -7,6 +7,7 @@ import HeroHeadline from '@/components/HeroHeadline.vue'
 import LegendRow from '@/components/LegendRow.vue'
 import PanelGrid from '@/components/PanelGrid.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
+import ReachChart from '@/components/ReachChart.vue'
 import ResultsTable from '@/components/ResultsTable.vue'
 import ScenarioToolbar from '@/components/ScenarioToolbar.vue'
 import { usePlayback } from '@/composables/usePlayback'
@@ -32,6 +33,7 @@ onMounted(async () => {
     <PanelGrid />
     <LegendRow />
     <PlayerBar />
+    <ReachChart />
     <ResultsTable
       :panels="store.state.panels"
       :results-by-panel-id="store.state.resultsByPanelId"

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import NetworkView from './NetworkView.vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { roundPct } from '@/lib/format'
+import { reachedCountAtRound } from '@/lib/reach'
 import type { PanelSpec } from '@/presets/types'
 
 const props = defineProps<{ panel: PanelSpec; accent: string }>()
@@ -16,10 +17,7 @@ const numStudents = computed(() => store.effectiveConfig(props.panel).numStudent
 // shows at the current round, reaching the final outcome on the last one.
 const reachedCount = computed(() => {
   const panelResult = result.value
-  if (!panelResult) return 0
-  return panelResult.reachedAtRound.filter(
-    (reachedAt) => reachedAt >= 0 && reachedAt <= store.state.round,
-  ).length
+  return panelResult ? reachedCountAtRound(panelResult.reachedAtRound, store.state.round) : 0
 })
 const reachedPctNow = computed(() => (reachedCount.value / numStudents.value) * 100)
 const tone = computed(() =>
