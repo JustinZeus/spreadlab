@@ -93,6 +93,9 @@ func RunScenario(config Config, strategy Strategy) (Result, error) {
 		return Result{}, fmt.Errorf("scenario: unknown strategy %q", strategy)
 	}
 
+	if educated == nil {
+		educated = []int{} // a nil slice marshals to JSON null, not []
+	}
 	cascade := RunCascade(graph, config.Origin, config.ForwardProb, educated, thresholds)
 	return Result{
 		Strategy:       strategy,

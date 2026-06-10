@@ -15,4 +15,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    // The Go server owns /api; run it next to `npm run dev` with:
+    //   go run ./cmd/spreadlab
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
 })
