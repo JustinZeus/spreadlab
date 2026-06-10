@@ -6,8 +6,8 @@ import { useSimStore, type SimStore } from './useSimStore'
 // one-time autoplay). Playback never loops; at the final round the play
 // button becomes a replay affordance.
 
-export const ROUND_MS = 700
-export const REDUCED_MOTION_ROUND_MS = 1000
+export const ROUND_MS = 1000
+export const REDUCED_MOTION_ROUND_MS = 1200
 
 const SPEED_CYCLE: Record<number, 0.5 | 1 | 2> = { 0.5: 1, 1: 2, 2: 0.5 }
 

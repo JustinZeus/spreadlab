@@ -72,6 +72,19 @@ button {
   font-family: inherit;
 }
 
+/* The native number-input spinners render as light boxes that clash with
+   the dark theme and crowd the compact fields; arrow keys and typing keep
+   working without them. */
+input[type='number'] {
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

@@ -75,7 +75,7 @@ function onNodeClick(nodeIndex: number, event: MouseEvent) {
 // the panel stats), then fade in over the rest of the interval; playback
 // never shows a finished still frame between rounds.
 const roundIntervalMs = computed(() => ROUND_MS / store.state.speed)
-const popDurationMs = computed(() => roundIntervalMs.value * (1 - APPEAR_WINDOW) + 120)
+const popDurationMs = computed(() => roundIntervalMs.value * 0.3)
 
 function popDelay(nodeIndex: number): string {
   return `${appearanceJitter(nodeIndex) * APPEAR_WINDOW * roundIntervalMs.value}ms`
