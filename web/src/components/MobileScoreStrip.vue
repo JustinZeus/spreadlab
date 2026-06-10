@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { roundPct } from '@/lib/format'
-import { reachedCountAtRound } from '@/lib/reach'
+import { reachedCountDisplayed } from '@/lib/reach'
 
 // Mobile only (spec section 9): a sticky strip of one pill per panel so
 // the comparison survives the single-column stack. The percentages follow
@@ -22,7 +22,10 @@ const chips = computed<StripChip[]>(() =>
     const result = store.state.resultsByPanelId[panel.id]
     if (!result) return { panelId: panel.id, label: panel.label, pctText: '…', tone: 'pending' }
     const numStudents = store.effectiveConfig(panel).numStudents
-    const pct = (reachedCountAtRound(result.reachedAtRound, store.state.round) / numStudents) * 100
+    const pct =
+      (reachedCountDisplayed(result.reachedAtRound, store.state.round, store.state.roundProgress) /
+        numStudents) *
+      100
     return {
       panelId: panel.id,
       label: panel.label,

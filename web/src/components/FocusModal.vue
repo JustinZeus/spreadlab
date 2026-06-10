@@ -5,7 +5,7 @@ import PlayerBar from './PlayerBar.vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { accentForPanel } from '@/lib/accents'
 import { roundPct } from '@/lib/format'
-import { reachedCountAtRound } from '@/lib/reach'
+import { reachedCountDisplayed } from '@/lib/reach'
 
 // One panel rendered large (spec 5.8): same SVG, same global round, with
 // a PlayerBar docked at the modal footer (both bars share the store, so
@@ -27,7 +27,9 @@ const numStudents = computed(() =>
   panel.value ? store.effectiveConfig(panel.value).numStudents : 0,
 )
 const reachedCount = computed(() =>
-  result.value ? reachedCountAtRound(result.value.reachedAtRound, store.state.round) : 0,
+  result.value
+    ? reachedCountDisplayed(result.value.reachedAtRound, store.state.round, store.state.roundProgress)
+    : 0,
 )
 const reachedPctNow = computed(() => (reachedCount.value / Math.max(numStudents.value, 1)) * 100)
 const tone = computed(() =>

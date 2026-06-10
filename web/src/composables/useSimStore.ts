@@ -25,6 +25,9 @@ export interface SimState {
   resultsByPanelId: Record<string, Result>
   edgesByGraphHash: Record<string, number[][]>
   round: number
+  // How far the current round's transition has played, 0..1. Outside
+  // playback it is 1: the round is fully displayed.
+  roundProgress: number
   playing: boolean
   speed: PlaybackSpeed
   focusPanelId: string | null
@@ -53,6 +56,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     resultsByPanelId: {},
     edgesByGraphHash: {},
     round: 0,
+    roundProgress: 1,
     playing: false,
     speed: 1,
     focusPanelId: null,

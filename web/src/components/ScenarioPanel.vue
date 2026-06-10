@@ -5,7 +5,7 @@ import PanelEditorPopover from './PanelEditorPopover.vue'
 import PanelMenu, { type PanelMenuItem } from './PanelMenu.vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { roundPct } from '@/lib/format'
-import { reachedCountAtRound } from '@/lib/reach'
+import { reachedCountDisplayed } from '@/lib/reach'
 import { MAX_PANELS, type PanelSpec } from '@/presets/types'
 
 const props = defineProps<{ panel: PanelSpec; accent: string }>()
@@ -61,11 +61,14 @@ function closeEditor() {
 const result = computed(() => store.state.resultsByPanelId[props.panel.id])
 const numStudents = computed(() => store.effectiveConfig(props.panel).numStudents)
 
-// The numbers follow the playhead: they count what the network picture
-// shows at the current round, reaching the final outcome on the last one.
+// The numbers follow the playhead live: they count exactly the dots that
+// have started appearing mid-transition, reaching the final outcome on
+// the last round.
 const reachedCount = computed(() => {
   const panelResult = result.value
-  return panelResult ? reachedCountAtRound(panelResult.reachedAtRound, store.state.round) : 0
+  return panelResult
+    ? reachedCountDisplayed(panelResult.reachedAtRound, store.state.round, store.state.roundProgress)
+    : 0
 })
 const reachedPctNow = computed(() => (reachedCount.value / numStudents.value) * 100)
 const tone = computed(() =>

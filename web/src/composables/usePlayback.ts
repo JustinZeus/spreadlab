@@ -32,6 +32,7 @@ export function createPlayback(store: SimStore = useSimStore()) {
 
   function finishPlayback() {
     state.playing = false
+    state.roundProgress = 1
     stopFrameLoop()
     state.announcement = `Final: ${store.resultsSummary()}`
   }
@@ -41,21 +42,32 @@ export function createPlayback(store: SimStore = useSimStore()) {
       frameId = null
       return
     }
-    if (timestamp - lastAdvanceAt >= roundIntervalMs()) {
+    const interval = roundIntervalMs()
+    const elapsed = timestamp - lastAdvanceAt
+    if (elapsed >= interval) {
       lastAdvanceAt = timestamp
       state.round += 1
+      // The new round starts its transition: dots trickle in from here.
+      state.roundProgress = 0
       if (state.round >= store.maxRounds()) {
         state.round = Math.min(state.round, store.maxRounds())
         finishPlayback()
         return
       }
+    } else {
+      // Under reduced motion rounds swap discretely: always fully shown.
+      state.roundProgress = prefersReducedMotion() ? 1 : Math.min(elapsed / interval, 1)
     }
     frameId = requestAnimationFrame(onFrame)
   }
 
   function play() {
     if (store.maxRounds() === 0 || state.playing) return
-    if (state.round >= store.maxRounds()) state.round = 0 // replay affordance
+    if (state.round >= store.maxRounds()) {
+      // Replay affordance: restart with round 0's own transition.
+      state.round = 0
+      state.roundProgress = 0
+    }
     state.playing = true
     lastAdvanceAt = performance.now()
     frameId = requestAnimationFrame(onFrame)
@@ -64,6 +76,7 @@ export function createPlayback(store: SimStore = useSimStore()) {
   function pause() {
     if (!state.playing) return
     state.playing = false
+    state.roundProgress = 1 // hold the full current round while paused
     stopFrameLoop()
     state.announcement = `Paused at round ${state.round} of ${store.maxRounds()}`
   }
@@ -80,6 +93,7 @@ export function createPlayback(store: SimStore = useSimStore()) {
   // the seek announcement happens on scrub release (announceRound).
   function quietPause() {
     state.playing = false
+    state.roundProgress = 1
     stopFrameLoop()
   }
 
@@ -105,6 +119,7 @@ export function createPlayback(store: SimStore = useSimStore()) {
   function replay() {
     quietPause()
     state.round = 0
+    state.roundProgress = 0
     play()
   }
 
@@ -123,6 +138,7 @@ export function createPlayback(store: SimStore = useSimStore()) {
       return
     }
     state.round = 0
+    state.roundProgress = 0
     play()
   }
 

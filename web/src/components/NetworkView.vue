@@ -5,6 +5,7 @@ import { useNodeHover } from '@/composables/useNodeHover'
 import { ROUND_MS } from '@/composables/usePlayback'
 import { useSimStore } from '@/composables/useSimStore'
 import { graphKey } from '@/lib/graph'
+import { APPEAR_WINDOW, appearanceJitter } from '@/lib/reach'
 import type { PanelSpec } from '@/presets/types'
 
 // One panel's network picture (spec section 6). Shape carries meaning,
@@ -69,14 +70,15 @@ function onNodeClick(nodeIndex: number, event: MouseEvent) {
   }
 }
 
-// The fade-in spans the whole round interval (scaled with playback speed)
-// and each node starts at a small deterministic offset, so during playback
-// something is always in motion; there is never a finished still frame
-// between rounds.
-const popDurationMs = computed(() => ROUND_MS / store.state.speed)
+// Dots of the current round appear at deterministic random moments spread
+// across the round interval (the same jitter drives the live counter in
+// the panel stats), then fade in over the rest of the interval; playback
+// never shows a finished still frame between rounds.
+const roundIntervalMs = computed(() => ROUND_MS / store.state.speed)
+const popDurationMs = computed(() => roundIntervalMs.value * (1 - APPEAR_WINDOW) + 120)
 
 function popDelay(nodeIndex: number): string {
-  return `${((nodeIndex * 37) % 150) / store.state.speed}ms`
+  return `${appearanceJitter(nodeIndex) * APPEAR_WINDOW * roundIntervalMs.value}ms`
 }
 </script>
 
