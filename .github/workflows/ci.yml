@@ -1,0 +1,54 @@
+# Runs the same checks as the README's "Checks" section, plus a guard that
+# the generated TypeScript types are in sync with the Go structs.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  go:
+    name: Go (test, lint, generated types)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Test
+        run: go test ./...
+      - name: gofmt
+        run: test -z "$(gofmt -l .)"
+      - name: Generated types are in sync
+        run: |
+          go generate ./...
+          git diff --exit-code web/src/types/
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+
+  web:
+    name: Web (type-check, lint, test, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Type-check
+        run: npm run type-check
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm run test:unit -- --run
+      - name: Build
+        run: npm run build
