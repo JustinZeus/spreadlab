@@ -109,7 +109,12 @@ func handleScenario(w http.ResponseWriter, r *http.Request) {
 func writeJSON(w http.ResponseWriter, status int, payload any) {
 	body, err := json.Marshal(payload)
 	if err != nil {
-		http.Error(w, "encoding response failed", http.StatusInternalServerError)
+		// Last-resort path: report the encoder's failure without using the
+		// encoder. The hand-written constant keeps the error contract JSON
+		// while staying strictly simpler than what just failed.
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"error":"encoding response failed"}`))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

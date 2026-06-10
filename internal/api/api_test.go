@@ -22,6 +22,29 @@ func serve(t *testing.T, method, path string, body []byte) *httptest.ResponseRec
 	return recorder
 }
 
+func TestWriteJSONEncodingFailureStaysJSON(t *testing.T) {
+	// Channels cannot be marshaled, forcing the otherwise unreachable
+	// last-resort branch. Even there the error contract must stay JSON.
+	recorder := httptest.NewRecorder()
+	writeJSON(recorder, http.StatusOK, make(chan int))
+
+	if recorder.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", recorder.Code, http.StatusInternalServerError)
+	}
+	if got := recorder.Header().Get("Content-Type"); got != "application/json" {
+		t.Errorf("Content-Type = %q, want application/json", got)
+	}
+	var response struct {
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+		t.Fatalf("fallback body is not JSON: %v (body: %s)", err, recorder.Body)
+	}
+	if response.Error == "" {
+		t.Error("fallback body has an empty error field")
+	}
+}
+
 func TestDefaultConfigEndpoint(t *testing.T) {
 	recorder := serve(t, http.MethodGet, "/api/config/default", nil)
 
