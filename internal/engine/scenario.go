@@ -11,6 +11,12 @@ const (
 	StrategyMostConnected Strategy = "most-connected"
 )
 
+// AllStrategies lists every strategy in display order. The CLI, and later
+// the API and frontend, read this one list; nothing redefines it.
+func AllStrategies() []Strategy {
+	return []Strategy{StrategyNone, StrategyRandom, StrategyMostConnected}
+}
+
 // Config fully describes one simulation world. It is the single source of
 // truth for parameters: API and frontend types will be generated from the
 // structs in this file, never redefined by hand. Identical configs produce
