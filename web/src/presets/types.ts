@@ -18,6 +18,7 @@ export interface StudyPreset {
   narrative: string
   disclaimerShort: string // badge text
   disclaimerLong: string // About popover body
+  readingCaption: string // one quiet line under the legend: how to read the dots
   toneThresholdPct: number // reached% <= threshold renders "good" (teal)
   base: Config // the default world
   panels: PanelSpec[] // initial panels

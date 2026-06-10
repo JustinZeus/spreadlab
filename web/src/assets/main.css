@@ -1,35 +1,106 @@
-@import './base.css';
+@import '@fontsource-variable/inter';
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+/* Visual tokens (spec section 6), one set per theme. Node semantics are
+   identical in both themes. */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --border-soft: #eef2f7;
+  --edge: #e6e9ef;
+  --unreached: #d8dfe9;
+  --spread: #f43f5e;
+  --spread-soft: #fff1f2;
+  --edu: #14b8a6;
+  --edu-soft: #f0fdfa;
+  --ink: #0f172a;
+  --ink-2: #334155;
+  --ink-3: #64748b;
+  --ink-4: #94a3b8;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 16px -8px rgba(15, 23, 42, 0.08);
+  --shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.06), 0 12px 32px -12px rgba(15, 23, 42, 0.16);
+  --radius: 16px;
 }
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+:root.dark {
+  --bg: #0b1120;
+  --surface: #111a2e;
+  --border: #1e293b;
+  --border-soft: #1a2438;
+  --edge: #243349;
+  --unreached: #3b4a61;
+  --spread: #fb7185;
+  --spread-soft: rgba(251, 113, 133, 0.08);
+  --edu: #2dd4bf;
+  --edu-soft: rgba(45, 212, 191, 0.08);
+  --ink: #f1f5f9;
+  --ink-2: #cbd5e1;
+  --ink-3: #94a3b8;
+  --ink-4: #64748b;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 40px -16px rgba(0, 0, 0, 0.6);
 }
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+}
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    15px/1.5 'Inter Variable',
+    Inter,
+    system-ui,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessibility acceptance criterion: a visible 2 px ink outline with 2 px
+   offset on every focusable element, both themes. */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Shared icon sizing for the inline stroke icons. */
+svg.ic {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

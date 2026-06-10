@@ -1,40 +1,51 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { fetchDefaultConfig, runComparison } from '@/lib/api'
-import type { ComparisonResponse } from '@/types/api'
-import ComparisonTable from '@/components/ComparisonTable.vue'
+import { onMounted } from 'vue'
+import AppBar from '@/components/AppBar.vue'
+import ErrorBanner from '@/components/ErrorBanner.vue'
+import FooterDisclaimer from '@/components/FooterDisclaimer.vue'
+import HeroHeadline from '@/components/HeroHeadline.vue'
+import LegendRow from '@/components/LegendRow.vue'
+import PanelGrid from '@/components/PanelGrid.vue'
+import ResultsTable from '@/components/ResultsTable.vue'
+import ScenarioToolbar from '@/components/ScenarioToolbar.vue'
+import { useSimStore } from '@/composables/useSimStore'
+import { useTheme } from '@/composables/useTheme'
 
-const comparison = ref<ComparisonResponse | null>(null)
-const error = ref<string | null>(null)
+const store = useSimStore()
+useTheme() // resolve and apply the theme before first paint of the app
 
-onMounted(async () => {
-  try {
-    const config = await fetchDefaultConfig()
-    comparison.value = await runComparison(config)
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : String(cause)
-  }
+onMounted(() => {
+  void store.initialize()
 })
 </script>
 
 <template>
-  <main>
-    <h1>spreadlab</h1>
-    <p>
-      How a non-consensual deepfake spreads through a simulated school year
-      group, and what an education program changes. Illustrative, not
-      validated.
-    </p>
-    <p v-if="error" role="alert">Could not reach the spreadlab API: {{ error }}</p>
-    <ComparisonTable v-else-if="comparison" :comparison="comparison" />
-    <p v-else>Running scenarios&hellip;</p>
+  <AppBar />
+  <main class="page">
+    <HeroHeadline />
+    <ScenarioToolbar />
+    <ErrorBanner />
+    <PanelGrid />
+    <LegendRow />
+    <ResultsTable
+      :panels="store.state.panels"
+      :results-by-panel-id="store.state.resultsByPanelId"
+      :base="store.state.base"
+    />
   </main>
+  <FooterDisclaimer />
 </template>
 
 <style scoped>
-main {
-  max-width: 48rem;
+.page {
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 36px 28px 30px;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 22px 16px;
+  }
 }
 </style>

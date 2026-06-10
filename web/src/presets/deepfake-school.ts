@@ -19,6 +19,9 @@ export const deepfakeSchoolPreset: StudyPreset = {
     'illustration, not fitted to data, so it is not a validated prediction ' +
     'of any real school. Use it to build intuition about who to educate, ' +
     'not to forecast outcomes.',
+  readingCaption:
+    'Each dot is one student in the same simulated year group. Every scenario ' +
+    'runs the identical school; only the education program differs.',
   toneThresholdPct: 30,
   base: {
     numStudents: 120,

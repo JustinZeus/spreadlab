@@ -9,6 +9,7 @@ const preset: StudyPreset = {
   narrative: 'n',
   disclaimerShort: 'short',
   disclaimerLong: 'long',
+  readingCaption: 'caption',
   toneThresholdPct: 30,
   base: {
     numStudents: 120,
