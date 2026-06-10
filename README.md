@@ -17,7 +17,13 @@ Status: milestone 2, thin API + parity page done.
 
 ## Development
 
-Two terminals:
+One command (installs frontend deps on first run, Ctrl-C stops everything):
+
+```sh
+./dev.sh
+```
+
+Or manually, in two terminals:
 
 ```sh
 go run ./cmd/spreadlab        # API on localhost:8080
