@@ -11,6 +11,11 @@ import "math/rand/v2"
 // engine never touches global random state; every source of randomness
 // (graph build, edge thresholds, education sampling) gets its own seeded
 // stream so each can be varied independently.
+//
+// This file is deliberately NOT a wall around math/rand/v2: components
+// take *rand.Rand parameters directly, the idiomatic Go shape. What is
+// centralised here is construction; RunScenario is the only caller, so
+// "all randomness flows from config seeds" is enforced by structure.
 func newRand(seed uint64) *rand.Rand {
 	return rand.New(rand.NewPCG(seed, 0))
 }
