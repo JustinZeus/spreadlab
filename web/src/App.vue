@@ -6,16 +6,20 @@ import FooterDisclaimer from '@/components/FooterDisclaimer.vue'
 import HeroHeadline from '@/components/HeroHeadline.vue'
 import LegendRow from '@/components/LegendRow.vue'
 import PanelGrid from '@/components/PanelGrid.vue'
+import PlayerBar from '@/components/PlayerBar.vue'
 import ResultsTable from '@/components/ResultsTable.vue'
 import ScenarioToolbar from '@/components/ScenarioToolbar.vue'
+import { usePlayback } from '@/composables/usePlayback'
 import { useSimStore } from '@/composables/useSimStore'
 import { useTheme } from '@/composables/useTheme'
 
 const store = useSimStore()
+const playback = usePlayback()
 useTheme() // resolve and apply the theme before first paint of the app
 
-onMounted(() => {
-  void store.initialize()
+onMounted(async () => {
+  await store.initialize()
+  playback.autoplayOnce()
 })
 </script>
 
@@ -27,6 +31,7 @@ onMounted(() => {
     <ErrorBanner />
     <PanelGrid />
     <LegendRow />
+    <PlayerBar />
     <ResultsTable
       :panels="store.state.panels"
       :results-by-panel-id="store.state.resultsByPanelId"
@@ -34,6 +39,7 @@ onMounted(() => {
     />
   </main>
   <FooterDisclaimer />
+  <div class="visually-hidden" aria-live="polite">{{ store.state.announcement }}</div>
 </template>
 
 <style scoped>

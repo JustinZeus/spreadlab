@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import NetworkView from './NetworkView.vue'
 import { useSimStore } from '@/composables/useSimStore'
-import { formatPct, roundPct } from '@/lib/format'
+import { roundPct } from '@/lib/format'
 import type { PanelSpec } from '@/presets/types'
 
 const props = defineProps<{ panel: PanelSpec; accent: string }>()
@@ -11,10 +11,19 @@ const store = useSimStore()
 
 const result = computed(() => store.state.resultsByPanelId[props.panel.id])
 const numStudents = computed(() => store.effectiveConfig(props.panel).numStudents)
+
+// The numbers follow the playhead: they count what the network picture
+// shows at the current round, reaching the final outcome on the last one.
+const reachedCount = computed(() => {
+  const panelResult = result.value
+  if (!panelResult) return 0
+  return panelResult.reachedAtRound.filter(
+    (reachedAt) => reachedAt >= 0 && reachedAt <= store.state.round,
+  ).length
+})
+const reachedPctNow = computed(() => (reachedCount.value / numStudents.value) * 100)
 const tone = computed(() =>
-  result.value && roundPct(result.value.reachedPct) <= store.preset.toneThresholdPct
-    ? 'good'
-    : 'bad',
+  roundPct(reachedPctNow.value) <= store.preset.toneThresholdPct ? 'good' : 'bad',
 )
 
 interface PanelChip {
@@ -48,12 +57,9 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
       </button>
     </div>
     <template v-if="result">
-      <div class="pct" :class="tone">
-        {{ roundPct(result.reachedPct) }}<small>%</small>
-        <span class="visually-hidden">{{ formatPct(result.reachedPct) }} reached</span>
-      </div>
+      <div class="pct" :class="tone">{{ roundPct(reachedPctNow) }}<small>%</small></div>
       <div class="meta">
-        <span>{{ result.numReached }} of {{ numStudents }} reached</span>
+        <span>{{ reachedCount }} of {{ numStudents }} reached</span>
         <span class="sep" aria-hidden="true">•</span>
         <span>{{ result.numRounds }} rounds</span>
         <span class="sep" aria-hidden="true">•</span>

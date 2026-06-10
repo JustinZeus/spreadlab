@@ -1,5 +1,6 @@
 import { reactive } from 'vue'
 import { ApiError, runScenario } from '@/lib/api'
+import { roundPct } from '@/lib/format'
 import { graphKey } from '@/lib/graph'
 import { parseUrlState, serializeUrlState } from '@/lib/urlState'
 import { deepfakeSchoolPreset } from '@/presets/deepfake-school'
@@ -32,6 +33,7 @@ export interface SimState {
   errorMessage: string | null // network/server failure, shown in the ErrorBanner
   validationError: string | null // 400 from the engine, shown inline under the controls
   urlStateInvalid: boolean // the opened link held malformed state; preset shown instead
+  announcement: string // text for the single polite live region (spec section 8)
 }
 
 function createPanelId(): string {
@@ -57,6 +59,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     errorMessage: null,
     validationError: null,
     urlStateInvalid: false,
+    announcement: '',
   })
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -80,6 +83,19 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
       const result = state.resultsByPanelId[panel.id]
       return result ? Math.max(roundsSoFar, result.numRounds) : roundsSoFar
     }, 0)
+  }
+
+  // One spoken line per state of the world, e.g. "No program 83 percent,
+  // Random picks 58 percent". Used by the live region for run updates and
+  // by playback for the final announcement.
+  function resultsSummary(): string {
+    return state.panels
+      .map((panel) => {
+        const result = state.resultsByPanelId[panel.id]
+        return result ? `${panel.label} ${roundPct(result.reachedPct)} percent` : null
+      })
+      .filter(Boolean)
+      .join(', ')
   }
 
   function scheduleRun(panelId?: string) {
@@ -144,6 +160,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     state.errorMessage = null
     state.validationError = null
     state.round = maxRounds()
+    state.announcement = `Updated: ${resultsSummary()}`
     syncToUrl()
   }
 
@@ -274,6 +291,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     preset,
     effectiveConfig,
     maxRounds,
+    resultsSummary,
     initialize,
     retry,
     setBaseField,
