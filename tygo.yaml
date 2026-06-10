@@ -6,3 +6,12 @@ packages:
     output_path: "web/src/types/engine.ts"
     include_files:
       - "scenario.go"
+  - path: "github.com/JustinZeus/spreadlab/internal/api"
+    output_path: "web/src/types/api.ts"
+    include_files:
+      - "api.go"
+    frontmatter: |
+      import type { Config, Result } from "./engine";
+    type_mappings:
+      engine.Config: "Config"
+      engine.Result: "Result"

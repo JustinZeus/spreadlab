@@ -1,23 +1,37 @@
-// Command spreadlab will serve the spreadlab dashboard. Until the HTTP
-// server lands (milestone 2), it runs the prototype's three scenarios in
-// the default world and prints the comparison.
+// Command spreadlab serves the spreadlab API (and, from milestone 4, the
+// dashboard itself). The -table flag instead prints the three-scenario
+// comparison and exits, a quick engine sanity check.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 
+	"github.com/JustinZeus/spreadlab/internal/api"
 	"github.com/JustinZeus/spreadlab/internal/engine"
 )
 
-// main stays a thin shell: the work lives in run, which takes its output
-// as an io.Writer so tests can capture it.
 func main() {
-	if err := run(os.Stdout); err != nil {
-		fmt.Fprintln(os.Stderr, "spreadlab:", err)
-		os.Exit(1)
+	addr := flag.String("addr", "localhost:8080", "address to serve the API on")
+	table := flag.Bool("table", false, "print the three-scenario comparison and exit")
+	flag.Parse()
+
+	if *table {
+		if err := run(os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "spreadlab:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	log.Printf("spreadlab API listening on http://%s", *addr)
+	if err := http.ListenAndServe(*addr, api.NewServer()); err != nil {
+		log.Fatal(err)
 	}
 }
 
