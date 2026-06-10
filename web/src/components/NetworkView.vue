@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { layoutForGraph, NETWORK_VIEW_HEIGHT, NETWORK_VIEW_WIDTH } from '@/composables/useLayout'
+import { useNodeHover } from '@/composables/useNodeHover'
 import { ROUND_MS } from '@/composables/usePlayback'
 import { useSimStore } from '@/composables/useSimStore'
 import { graphKey } from '@/lib/graph'
@@ -14,6 +15,7 @@ import type { PanelSpec } from '@/presets/types'
 const props = defineProps<{ panel: PanelSpec }>()
 
 const store = useSimStore()
+const { setHoveredNode, moveHoveredNode, clearHoveredNode } = useNodeHover()
 
 const effectiveConfig = computed(() => store.effectiveConfig(props.panel))
 const panelGraphKey = computed(() => graphKey(effectiveConfig.value))
@@ -50,6 +52,21 @@ const nodes = computed<RenderedNode[]>(() => {
 
 function edgeEnd(edge: number[], side: 0 | 1) {
   return layout.value[edge[side] ?? 0] ?? { x: 0, y: 0 }
+}
+
+// The cross-panel echo (spec 5.5): the hovered student gets an ink ring
+// in every panel simultaneously, regardless of which panel is pointed at.
+const echoPoint = computed(() =>
+  store.state.hoveredNode !== null ? layout.value[store.state.hoveredNode] : undefined,
+)
+
+// A tap shows the tooltip without opening the focus modal; a mouse click
+// falls through to the surrounding zoom button (spec 5.5 vs 5.8).
+function onNodeClick(nodeIndex: number, event: MouseEvent) {
+  if (event instanceof PointerEvent && event.pointerType === 'touch') {
+    event.stopPropagation()
+    setHoveredNode(props.panel.id, nodeIndex, event)
+  }
 }
 
 // The fade-in spans the whole round interval (scaled with playback speed)
@@ -116,6 +133,29 @@ function popDelay(nodeIndex: number): string {
       />
       <circle v-else :cx="node.x" :cy="node.y" r="3" fill="var(--unreached)" />
     </g>
+    <circle
+      v-if="echoPoint"
+      class="echo"
+      :cx="echoPoint.x"
+      :cy="echoPoint.y"
+      r="6.5"
+      fill="none"
+      stroke="var(--ink)"
+      stroke-width="2"
+    />
+    <!-- Transparent hit halos keep 4 px dots hoverable and tappable. -->
+    <circle
+      v-for="(point, nodeIndex) in layout"
+      :key="`hit-${nodeIndex}`"
+      :cx="point.x"
+      :cy="point.y"
+      r="12"
+      fill="transparent"
+      @pointerenter="setHoveredNode(panel.id, nodeIndex, $event)"
+      @pointermove="moveHoveredNode($event)"
+      @pointerleave="clearHoveredNode()"
+      @click="onNodeClick(nodeIndex, $event)"
+    />
   </svg>
 </template>
 
@@ -138,6 +178,10 @@ function popDelay(nodeIndex: number): string {
   to {
     opacity: 1;
   }
+}
+
+.echo {
+  pointer-events: none;
 }
 
 /* Nodes reached this round fade and scale in across the full round

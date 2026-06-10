@@ -7,6 +7,7 @@ import FocusModal from '@/components/FocusModal.vue'
 import FooterDisclaimer from '@/components/FooterDisclaimer.vue'
 import HeroHeadline from '@/components/HeroHeadline.vue'
 import LegendRow from '@/components/LegendRow.vue'
+import NodeTooltip from '@/components/NodeTooltip.vue'
 import PanelGrid from '@/components/PanelGrid.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
 import ReachChart from '@/components/ReachChart.vue'
@@ -47,6 +48,7 @@ onMounted(async () => {
   </main>
   <FooterDisclaimer />
   <FocusModal v-if="store.state.focusPanelId" />
+  <NodeTooltip />
   <div class="visually-hidden" aria-live="polite">{{ store.state.announcement }}</div>
 </template>
 
