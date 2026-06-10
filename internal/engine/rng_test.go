@@ -7,18 +7,19 @@ import "testing"
 // these assertions are exact, not probabilistic.
 
 func TestNewRandSameSeedSameStream(t *testing.T) {
-	a, b := newRand(17), newRand(17)
-	for i := range 100 {
-		if got, want := a.Float64(), b.Float64(); got != want {
-			t.Fatalf("draw %d: streams diverged: %v != %v", i, got, want)
+	firstStream, secondStream := newRand(17), newRand(17)
+	for draw := range 100 {
+		first, second := firstStream.Float64(), secondStream.Float64()
+		if first != second {
+			t.Fatalf("draw %d: streams diverged: %v != %v", draw, first, second)
 		}
 	}
 }
 
 func TestNewRandDifferentSeedsDiffer(t *testing.T) {
-	a, b := newRand(17), newRand(18)
+	seededWith17, seededWith18 := newRand(17), newRand(18)
 	for range 100 {
-		if a.Float64() != b.Float64() {
+		if seededWith17.Float64() != seededWith18.Float64() {
 			return // diverged, as expected
 		}
 	}
