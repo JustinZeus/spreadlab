@@ -65,9 +65,7 @@ const curves = computed<ChartCurve[]>(() =>
   }),
 )
 
-const gridLines = computed(() =>
-  [0, 25, 50, 75, 100].map((pct) => ({ pct, y: pctToY(pct) })),
-)
+const gridLines = computed(() => [0, 25, 50, 75, 100].map((pct) => ({ pct, y: pctToY(pct) })))
 
 // Label every round while they fit; thin out for long runs.
 const roundLabels = computed(() => {
@@ -159,7 +157,6 @@ const playheadX = computed(() => roundToX(store.state.round))
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 20px 22px;
-  margin-top: 26px;
 }
 
 h3 {

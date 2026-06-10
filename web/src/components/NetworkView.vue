@@ -16,7 +16,8 @@ const props = defineProps<{ panel: PanelSpec }>()
 const store = useSimStore()
 
 const effectiveConfig = computed(() => store.effectiveConfig(props.panel))
-const edges = computed(() => store.state.edgesByGraphHash[graphKey(effectiveConfig.value)] ?? [])
+const panelGraphKey = computed(() => graphKey(effectiveConfig.value))
+const edges = computed(() => store.state.edgesByGraphHash[panelGraphKey.value] ?? [])
 const result = computed(() => store.state.resultsByPanelId[props.panel.id])
 const layout = computed(() => layoutForGraph(effectiveConfig.value, edges.value))
 
@@ -64,6 +65,7 @@ function popDelay(nodeIndex: number): string {
 
 <template>
   <svg
+    :key="panelGraphKey"
     class="net"
     :viewBox="`0 0 ${NETWORK_VIEW_WIDTH} ${NETWORK_VIEW_HEIGHT}`"
     :style="{ '--pop-ms': `${popDurationMs}ms` }"
@@ -123,6 +125,19 @@ function popDelay(nodeIndex: number): string {
   height: auto;
   display: block;
   margin-top: 4px;
+  /* A graph-seed reroll remounts the svg (keyed by graph hash); the new
+     layout fades in (spec 5.3). Skipped under reduced motion globally. */
+  animation: layout-fade 200ms ease-out;
+}
+
+@keyframes layout-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Nodes reached this round fade and scale in across the full round

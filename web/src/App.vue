@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import AppBar from '@/components/AppBar.vue'
+import ControlsCard from '@/components/ControlsCard.vue'
 import ErrorBanner from '@/components/ErrorBanner.vue'
 import FooterDisclaimer from '@/components/FooterDisclaimer.vue'
 import HeroHeadline from '@/components/HeroHeadline.vue'
@@ -33,7 +34,10 @@ onMounted(async () => {
     <PanelGrid />
     <LegendRow />
     <PlayerBar />
-    <ReachChart />
+    <div class="lower">
+      <ReachChart />
+      <ControlsCard />
+    </div>
     <ResultsTable
       :panels="store.state.panels"
       :results-by-panel-id="store.state.resultsByPanelId"
@@ -51,9 +55,21 @@ onMounted(async () => {
   padding: 36px 28px 30px;
 }
 
+.lower {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 18px;
+  margin-top: 26px;
+  align-items: start;
+}
+
 @media (max-width: 760px) {
   .page {
     padding: 22px 16px;
+  }
+
+  .lower {
+    grid-template-columns: 1fr;
   }
 }
 </style>
