@@ -1,2 +1,5 @@
 # binary from `go build ./cmd/spreadlab`
 /spreadlab
+
+# prettier cache (npm run format in web/ walks up here)
+/node_modules/
