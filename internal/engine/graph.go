@@ -48,3 +48,18 @@ func (g *Graph) Degree(u int) int { return len(g.adj[u]) }
 // Neighbors returns u's neighbours in insertion order. The slice is the
 // graph's own storage: callers must not modify it.
 func (g *Graph) Neighbors(u int) []int { return g.adj[u] }
+
+// Edges returns every undirected edge exactly once as a [from, to] pair
+// with from < to, in deterministic node order. The slice is freshly
+// allocated; callers may keep it.
+func (g *Graph) Edges() [][2]int {
+	edges := make([][2]int, 0, g.edges)
+	for node := range g.NumNodes() {
+		for _, neighbor := range g.adj[node] {
+			if node < neighbor {
+				edges = append(edges, [2]int{node, neighbor})
+			}
+		}
+	}
+	return edges
+}

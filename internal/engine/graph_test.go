@@ -74,3 +74,56 @@ func TestGraphNeighborsAndDegree(t *testing.T) {
 		t.Error("HasEdge(1, 2) = true, want false")
 	}
 }
+
+func TestGraphEdgesListsEveryEdgeOnce(t *testing.T) {
+	graph := NewGraph(4)
+	graph.AddEdge(2, 1) // insertion order must not matter; pairs come out from < to
+	graph.AddEdge(0, 1)
+	graph.AddEdge(3, 0)
+
+	want := [][2]int{{0, 1}, {0, 3}, {1, 2}}
+	if got := graph.Edges(); !slices.Equal(got, want) {
+		t.Errorf("Edges() = %v, want %v", got, want)
+	}
+}
+
+func TestGraphEdgesMatchesGeneratedGraph(t *testing.T) {
+	graph, err := HolmeKim(60, 3, 0.45, newRand(17))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	edges := graph.Edges()
+	if len(edges) != graph.NumEdges() {
+		t.Fatalf("len(Edges()) = %d, want NumEdges() = %d", len(edges), graph.NumEdges())
+	}
+	for _, edge := range edges {
+		from, to := edge[0], edge[1]
+		if from >= to {
+			t.Errorf("edge %v: want from < to", edge)
+		}
+		if to >= graph.NumNodes() {
+			t.Errorf("edge %v: endpoint out of range", edge)
+		}
+		if !graph.HasEdge(from, to) {
+			t.Errorf("edge %v not present in adjacency", edge)
+		}
+	}
+}
+
+func TestGraphEdgesDeterministicFromConfig(t *testing.T) {
+	first, err := GraphEdges(DefaultConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := GraphEdges(DefaultConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(first, second) {
+		t.Error("GraphEdges() differs across identical configs")
+	}
+	if len(first) == 0 {
+		t.Error("GraphEdges() returned no edges")
+	}
+}

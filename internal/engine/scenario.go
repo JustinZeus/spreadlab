@@ -60,6 +60,18 @@ type Result struct {
 	ReachedPct     float64  `json:"reachedPct"`
 }
 
+// GraphEdges builds the world's social network from the config's graph
+// fields and returns its undirected edge list. The same config always
+// yields the same edges (seeded generator), so the API can expose
+// topology separately without every Result carrying it.
+func GraphEdges(config Config) ([][2]int, error) {
+	graph, err := HolmeKim(config.NumStudents, config.EdgesPerNode, config.TriangleProb, newRand(config.GraphSeed))
+	if err != nil {
+		return nil, err
+	}
+	return graph.Edges(), nil
+}
+
 // RunScenario builds the world the config describes (network plus edge
 // thresholds), picks the educated students per strategy, and runs the
 // cascade. Scenarios with the same config share the same world, so
