@@ -81,7 +81,10 @@ function resolveThemeTokens(): Record<string, string> {
   return tokens
 }
 
-function svgToImage(svgElement: SVGSVGElement, tokens: Record<string, string>): Promise<HTMLImageElement> {
+function svgToImage(
+  svgElement: SVGSVGElement,
+  tokens: Record<string, string>,
+): Promise<HTMLImageElement> {
   const clone = svgElement.cloneNode(true) as SVGSVGElement
   clone.setAttribute('width', `${PANEL_WIDTH}`)
   clone.setAttribute('height', `${PANEL_HEIGHT}`)
@@ -114,7 +117,13 @@ export async function exportPng(store: SimStore): Promise<void> {
   const panelCount = panelsWithSvg.length
   const width = 2 * PAGE_PADDING + panelCount * PANEL_WIDTH + (panelCount - 1) * PANEL_GAP
   const height =
-    PAGE_PADDING + HEADER_HEIGHT + PANEL_HEIGHT + 20 + LEGEND_HEIGHT + FOOTER_HEIGHT + PAGE_PADDING / 2
+    PAGE_PADDING +
+    HEADER_HEIGHT +
+    PANEL_HEIGHT +
+    20 +
+    LEGEND_HEIGHT +
+    FOOTER_HEIGHT +
+    PAGE_PADDING / 2
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import ExportMenu from './ExportMenu.vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { MAX_PANELS } from '@/presets/types'
 
@@ -24,16 +25,7 @@ function addScenario() {
     <h2>Scenarios</h2>
     <span v-if="refreshing" class="spinner" role="status" aria-label="Updating scenarios" />
     <span class="grow" />
-    <button
-      class="btn export"
-      type="button"
-      disabled
-      title="Export arrives in a later slice"
-      aria-label="Export"
-    >
-      <svg class="ic" viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" /></svg>
-      <span class="btn-text">Export</span>
-    </button>
+    <ExportMenu />
     <button
       class="btn primary"
       type="button"
@@ -123,14 +115,10 @@ h2 {
     margin-top: 16px;
   }
 
-  /* Keep the toolbar one row down to 320 px: Export collapses to an icon
-     and the buttons grow to comfortable touch targets. */
+  /* Keep the toolbar one row down to 320 px with comfortable touch
+     targets; ExportMenu collapses itself to an icon. */
   .btn {
     min-height: 44px;
-  }
-
-  .btn.export .btn-text {
-    display: none;
   }
 }
 </style>

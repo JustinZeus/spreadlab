@@ -67,7 +67,11 @@ const numStudents = computed(() => store.effectiveConfig(props.panel).numStudent
 const reachedCount = computed(() => {
   const panelResult = result.value
   return panelResult
-    ? reachedCountDisplayed(panelResult.reachedAtRound, store.state.round, store.state.roundProgress)
+    ? reachedCountDisplayed(
+        panelResult.reachedAtRound,
+        store.state.round,
+        store.state.roundProgress,
+      )
     : 0
 })
 const reachedPctNow = computed(() => (reachedCount.value / numStudents.value) * 100)

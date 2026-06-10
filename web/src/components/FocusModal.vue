@@ -28,7 +28,11 @@ const numStudents = computed(() =>
 )
 const reachedCount = computed(() =>
   result.value
-    ? reachedCountDisplayed(result.value.reachedAtRound, store.state.round, store.state.roundProgress)
+    ? reachedCountDisplayed(
+        result.value.reachedAtRound,
+        store.state.round,
+        store.state.roundProgress,
+      )
     : 0,
 )
 const reachedPctNow = computed(() => (reachedCount.value / Math.max(numStudents.value, 1)) * 100)
