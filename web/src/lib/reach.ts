@@ -25,9 +25,23 @@ export function appearanceJitter(nodeIndex: number): number {
   return (mixed >>> 0) / 4294967296
 }
 
-// Reach as displayed mid-transition: every earlier round fully, plus the
-// current round's nodes whose appearance moment has passed. With
-// roundProgress = 1 this equals reachedCountAtRound.
+// Whether one node is displayed as reached mid-transition: every earlier
+// round fully, plus the current round's nodes whose appearance moment has
+// passed. The network rendering and the live counters share this exact
+// predicate, so a node keeps its unreached dot until the very frame its
+// rose dot starts fading in (no cohort blink at the round switch).
+export function nodeDisplayedAsReached(
+  reachedAt: number,
+  nodeIndex: number,
+  round: number,
+  roundProgress: number,
+): boolean {
+  if (reachedAt < 0 || reachedAt > round) return false
+  return reachedAt < round || roundProgress >= appearanceJitter(nodeIndex) * APPEAR_WINDOW
+}
+
+// Reach as displayed mid-transition; with roundProgress = 1 this equals
+// reachedCountAtRound.
 export function reachedCountDisplayed(
   reachedAtRound: number[],
   round: number,
@@ -35,10 +49,7 @@ export function reachedCountDisplayed(
 ): number {
   let displayed = 0
   reachedAtRound.forEach((reachedAt, nodeIndex) => {
-    if (reachedAt < 0 || reachedAt > round) return
-    if (reachedAt < round || roundProgress >= appearanceJitter(nodeIndex) * APPEAR_WINDOW) {
-      displayed += 1
-    }
+    if (nodeDisplayedAsReached(reachedAt, nodeIndex, round, roundProgress)) displayed += 1
   })
   return displayed
 }

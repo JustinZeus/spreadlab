@@ -5,7 +5,7 @@ import { useNodeHover } from '@/composables/useNodeHover'
 import { ROUND_MS } from '@/composables/usePlayback'
 import { useSimStore } from '@/composables/useSimStore'
 import { graphKey } from '@/lib/graph'
-import { APPEAR_WINDOW, appearanceJitter } from '@/lib/reach'
+import { nodeDisplayedAsReached } from '@/lib/reach'
 import type { PanelSpec } from '@/presets/types'
 
 // One panel's network picture (spec section 6). Shape carries meaning,
@@ -39,7 +39,14 @@ const nodes = computed<RenderedNode[]>(() => {
   const educatedNodes = new Set(panelResult.educated)
   return layout.value.map((point, nodeIndex) => {
     const reachedAtRound = panelResult.reachedAtRound[nodeIndex] ?? -1
-    const reached = reachedAtRound >= 0 && reachedAtRound <= store.state.round
+    // A node stays an unreached dot until its own appearance moment inside
+    // the round transition; the swap to rose is when its fade-in starts.
+    const reached = nodeDisplayedAsReached(
+      reachedAtRound,
+      nodeIndex,
+      store.state.round,
+      store.state.roundProgress,
+    )
     return {
       x: point.x,
       y: point.y,
@@ -70,16 +77,10 @@ function onNodeClick(nodeIndex: number, event: MouseEvent) {
   }
 }
 
-// Dots of the current round appear at deterministic random moments spread
-// across the round interval (the same jitter drives the live counter in
-// the panel stats), then fade in over the rest of the interval; playback
-// never shows a finished still frame between rounds.
-const roundIntervalMs = computed(() => ROUND_MS / store.state.speed)
-const popDurationMs = computed(() => roundIntervalMs.value * 0.3)
-
-function popDelay(nodeIndex: number): string {
-  return `${appearanceJitter(nodeIndex) * APPEAR_WINDOW * roundIntervalMs.value}ms`
-}
+// Each dot's fade starts exactly when the shared appearance predicate
+// flips it to reached (per-frame roundProgress gating), so no delay is
+// needed here; the fade itself takes a slice of the round interval.
+const popDurationMs = computed(() => (ROUND_MS / store.state.speed) * 0.3)
 </script>
 
 <template>
@@ -116,7 +117,6 @@ function popDelay(nodeIndex: number): string {
       <circle
         v-else-if="node.educated"
         :class="{ pop: node.justReached }"
-        :style="node.justReached ? { animationDelay: popDelay(nodeIndex) } : undefined"
         :cx="node.x"
         :cy="node.y"
         r="3.8"
@@ -127,7 +127,6 @@ function popDelay(nodeIndex: number): string {
       <circle
         v-else-if="node.reached"
         :class="{ pop: node.justReached }"
-        :style="node.justReached ? { animationDelay: popDelay(nodeIndex) } : undefined"
         :cx="node.x"
         :cy="node.y"
         r="4"
@@ -186,11 +185,11 @@ function popDelay(nodeIndex: number): string {
   pointer-events: none;
 }
 
-/* Nodes reached this round fade and scale in across the full round
-   interval (driven by --pop-ms), so playback reads as continuous motion.
+/* A node reached this round fades and scales in the moment its branch
+   flips (no delay; the trickle timing lives in nodeDisplayedAsReached).
    The global reduced-motion rule collapses this to a discrete swap. */
 .pop {
-  animation: pop var(--pop-ms, 650ms) ease-out backwards;
+  animation: pop var(--pop-ms, 300ms) ease-out backwards;
   transform-box: fill-box;
   transform-origin: center;
 }
