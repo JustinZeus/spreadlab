@@ -1,0 +1,8 @@
+# Generates the frontend's TypeScript types from the Go structs, which are
+# the single source of truth for parameters and results (see tool-handoff.md).
+# Regenerate with: go generate ./...
+packages:
+  - path: "github.com/JustinZeus/spreadlab/internal/engine"
+    output_path: "web/src/types/engine.ts"
+    include_files:
+      - "scenario.go"
