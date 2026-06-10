@@ -31,15 +31,19 @@ must land in seconds), curious public on the hosted demo, the author.
 
 ## What already exists (look at it)
 
-- Run `./dev.sh` from the repo root and open http://localhost:5173 to see
-  the current parity page (a static table of the three scenarios).
+Paths below are given from the course workspace root
+(/home/jv/src/uni/ai-in-open-society); the repo itself is
+grant-proposal/tool/.
+
+- Run ./dev.sh from grant-proposal/tool/ and open http://localhost:5173 to
+  see the current parity page (a static table of the three scenarios).
 - The Python prototype's rendered output defines the inherited visual
-  language: ../pitch/figure/out/spread.png and spread.gif (relative to the
-  repo root's parent: grant-proposal/pitch/figure/out/). Teal donut ring =
-  educated, rose = forwarded the fake, haloed node = origin, slate =
-  unreached; colourblind-safe via shape, not colour alone. Modern-dashboard
-  look, Tailwind-ish palette (see constants in
-  ../pitch/figure/spread_figure.py).
+  language: grant-proposal/pitch/figure/out/spread.png and spread.gif.
+  Read the PNG; it is the look to inherit. Teal donut ring = educated,
+  rose = forwarded the fake, haloed node = origin, slate = unreached;
+  colourblind-safe via shape, not colour alone. Modern-dashboard look,
+  Tailwind-ish palette (see constants in
+  grant-proposal/pitch/figure/spread_figure.py).
 - API: GET /api/config/default, POST /api/comparison (full Config in, all
   three strategies' Results out). Result.reachedAtRound gives per-node
   activation rounds, exactly what an animation needs. Types in
@@ -48,7 +52,7 @@ must land in seconds), curious public on the hosted demo, the author.
   network view needs. The spec should state what the frontend needs from a
   new/extended endpoint; the implementation session will add it.
 
-## Locked decisions the spec must respect (from ../tool-handoff.md)
+## Locked decisions the spec must respect (from grant-proposal/tool-handoff.md)
 
 - Layout is computed in the frontend with a force simulation (d3-force or
   equivalent) seeded from the config: a shared URL must render the same
