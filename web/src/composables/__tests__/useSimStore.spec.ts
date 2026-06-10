@@ -152,11 +152,14 @@ describe('useSimStore runs', () => {
     expect(store.state.errorMessage).toBe('fetch failed')
     expect(store.state.validationError).toBeNull()
     expect(store.state.resultsByPanelId).toEqual(goodResults)
+    // Every panel in the failed run gets the rose kebab dot.
+    expect(store.state.failedPanelIds.size).toBe(3)
 
     runScenarioMock.mockImplementation(async (request) => fakeResponse(request))
     await store.retry()
     expect(store.state.runState).toBe('idle')
     expect(store.state.errorMessage).toBeNull()
+    expect(store.state.failedPanelIds.size).toBe(0)
   })
 
   it('routes a 400 to validationError instead of the banner', async () => {

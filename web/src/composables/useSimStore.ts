@@ -28,6 +28,8 @@ export interface SimState {
   playing: boolean
   speed: PlaybackSpeed
   focusPanelId: string | null
+  editingPanelId: string | null // panel whose editor popover is open
+  failedPanelIds: Set<string> // panels whose latest request failed (rose kebab dot)
   hoveredNode: number | null
   runState: RunState
   errorMessage: string | null // network/server failure, shown in the ErrorBanner
@@ -54,6 +56,8 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     playing: false,
     speed: 1,
     focusPanelId: null,
+    editingPanelId: null,
+    failedPanelIds: new Set<string>(),
     hoveredNode: null,
     runState: 'idle',
     errorMessage: null,
@@ -135,6 +139,10 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
       // Keep the last good results untouched; only the latest run may
       // surface its error.
       if (!isLatestRun) return
+      settled.forEach((outcome, index) => {
+        const panel = targets[index]
+        if (panel && outcome.status === 'rejected') state.failedPanelIds.add(panel.id)
+      })
       const reason: unknown = firstFailure.reason
       state.runState = 'error'
       if (reason instanceof ApiError && reason.status === 400) {
@@ -153,6 +161,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
       if (outcome?.status !== 'fulfilled') return
       state.resultsByPanelId[panel.id] = outcome.value.result
       state.edgesByGraphHash[graphKey(outcome.value.config)] = outcome.value.edges
+      state.failedPanelIds.delete(panel.id)
     })
 
     if (!isLatestRun) return
@@ -213,7 +222,9 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     if (index < 0) return
     state.panels.splice(index, 1)
     delete state.resultsByPanelId[panelId]
+    state.failedPanelIds.delete(panelId)
     if (state.focusPanelId === panelId) state.focusPanelId = null
+    if (state.editingPanelId === panelId) state.editingPanelId = null
     syncToUrl()
   }
 

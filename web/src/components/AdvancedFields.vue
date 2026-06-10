@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSimStore } from '@/composables/useSimStore'
+import { CONFIG_FIELD_LABELS } from '@/lib/fieldLabels'
 import type { Config } from '@/types/engine'
 
 // The collapsible advanced grid (spec section 4): world-shaping numbers
@@ -17,10 +18,10 @@ interface NumberFieldDef {
 }
 
 const numberFields: NumberFieldDef[] = [
-  { field: 'numStudents', label: 'Students', min: 2, step: 1 },
-  { field: 'edgesPerNode', label: 'Friends per student', min: 1, step: 1 },
-  { field: 'triangleProb', label: 'Clique tendency', min: 0, step: 0.05 },
-  { field: 'origin', label: 'First poster', min: 0, step: 1 },
+  { field: 'numStudents', label: CONFIG_FIELD_LABELS.numStudents, min: 2, step: 1 },
+  { field: 'edgesPerNode', label: CONFIG_FIELD_LABELS.edgesPerNode, min: 1, step: 1 },
+  { field: 'triangleProb', label: CONFIG_FIELD_LABELS.triangleProb, min: 0, step: 0.05 },
+  { field: 'origin', label: CONFIG_FIELD_LABELS.origin, min: 0, step: 1 },
 ]
 
 interface SeedFieldDef {
@@ -29,9 +30,9 @@ interface SeedFieldDef {
 }
 
 const seedFields: SeedFieldDef[] = [
-  { field: 'graphSeed', label: 'Friendship network' },
-  { field: 'thresholdSeed', label: 'Who resists' },
-  { field: 'educationSeed', label: 'Random picks' },
+  { field: 'graphSeed', label: CONFIG_FIELD_LABELS.graphSeed },
+  { field: 'thresholdSeed', label: CONFIG_FIELD_LABELS.thresholdSeed },
+  { field: 'educationSeed', label: CONFIG_FIELD_LABELS.educationSeed },
 ]
 
 // The engine's 400 message names the offending Go/JSON field; mark it.

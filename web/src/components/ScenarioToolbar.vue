@@ -11,6 +11,12 @@ const atPanelCap = computed(() => store.state.panels.length >= MAX_PANELS)
 const refreshing = computed(
   () => store.state.runState === 'running' && Object.keys(store.state.resultsByPanelId).length > 0,
 )
+
+// Spec 5.6: a new panel opens its editor right away.
+function addScenario() {
+  const addedPanel = store.addPanel()
+  if (addedPanel) store.state.editingPanelId = addedPanel.id
+}
 </script>
 
 <template>
@@ -27,7 +33,7 @@ const refreshing = computed(
       type="button"
       :disabled="atPanelCap"
       :title="atPanelCap ? 'Maximum 6 scenarios' : undefined"
-      @click="store.addPanel()"
+      @click="addScenario()"
     >
       <svg class="ic" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" /></svg>
       Add scenario

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { STRATEGY_LABELS } from '@/lib/fieldLabels'
 import { formatPct } from '@/lib/format'
 import type { PanelSpec } from '@/presets/types'
 import type { Config, Result } from '@/types/engine'
@@ -12,12 +13,6 @@ const props = defineProps<{
   resultsByPanelId: Record<string, Result>
   base: Config
 }>()
-
-const strategyLabels: Record<string, string> = {
-  none: 'None',
-  random: 'Random',
-  'most-connected': 'Most connected',
-}
 
 function numStudentsFor(panel: PanelSpec): number {
   return panel.overrides.numStudents ?? props.base.numStudents
@@ -48,7 +43,7 @@ function numStudentsFor(panel: PanelSpec): number {
         <tr v-for="panel in panels" :key="panel.id">
           <th scope="row">{{ panel.label }}</th>
           <template v-if="resultsByPanelId[panel.id]">
-            <td>{{ strategyLabels[panel.strategy] ?? panel.strategy }}</td>
+            <td>{{ STRATEGY_LABELS[panel.strategy] ?? panel.strategy }}</td>
             <td>{{ resultsByPanelId[panel.id]!.educated.length }}</td>
             <td>{{ resultsByPanelId[panel.id]!.numReached }} / {{ numStudentsFor(panel) }}</td>
             <td>{{ formatPct(resultsByPanelId[panel.id]!.reachedPct) }}</td>

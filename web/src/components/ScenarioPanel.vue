@@ -1,14 +1,58 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import NetworkView from './NetworkView.vue'
+import PanelEditorPopover from './PanelEditorPopover.vue'
+import PanelMenu, { type PanelMenuItem } from './PanelMenu.vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { roundPct } from '@/lib/format'
 import { reachedCountAtRound } from '@/lib/reach'
-import type { PanelSpec } from '@/presets/types'
+import { MAX_PANELS, type PanelSpec } from '@/presets/types'
 
 const props = defineProps<{ panel: PanelSpec; accent: string }>()
 
 const store = useSimStore()
+
+const menuOpen = ref(false)
+const focusLabelOnOpen = ref(false)
+const kebabButton = ref<HTMLButtonElement | null>(null)
+
+const editing = computed(() => store.state.editingPanelId === props.panel.id)
+const failed = computed(() => store.state.failedPanelIds.has(props.panel.id))
+
+const menuItems = computed<PanelMenuItem[]>(() => [
+  { key: 'edit', label: 'Edit' },
+  { key: 'rename', label: 'Rename' },
+  { key: 'duplicate', label: 'Duplicate', disabled: store.state.panels.length >= MAX_PANELS },
+  { key: 'remove', label: 'Remove', disabled: store.state.panels.length <= 1 },
+])
+
+function onMenuSelect(itemKey: string) {
+  menuOpen.value = false
+  switch (itemKey) {
+    case 'edit':
+    case 'rename':
+      focusLabelOnOpen.value = itemKey === 'rename'
+      store.state.editingPanelId = props.panel.id
+      break
+    case 'duplicate':
+      store.duplicatePanel(props.panel.id)
+      kebabButton.value?.focus()
+      break
+    case 'remove':
+      store.removePanel(props.panel.id)
+      break
+  }
+}
+
+function closeMenu() {
+  menuOpen.value = false
+  kebabButton.value?.focus()
+}
+
+function closeEditor() {
+  store.state.editingPanelId = null
+  kebabButton.value?.focus()
+}
 
 const result = computed(() => store.state.resultsByPanelId[props.panel.id])
 const numStudents = computed(() => store.effectiveConfig(props.panel).numStudents)
@@ -50,10 +94,36 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
     <div class="head">
       <span class="swatch" :style="{ background: accent }" aria-hidden="true" />
       <span class="label">{{ panel.label }}</span>
-      <button class="kebab" type="button" disabled title="Scenario menu arrives in a later slice">
+      <button
+        ref="kebabButton"
+        class="kebab"
+        type="button"
+        aria-haspopup="menu"
+        :aria-expanded="menuOpen"
+        :aria-label="`Scenario menu for ${panel.label}`"
+        @click="menuOpen = !menuOpen"
+      >
         <svg class="ic" viewBox="0 0 24 24"><path d="M12 6h.01M12 12h.01M12 18h.01" /></svg>
+        <span
+          v-if="failed"
+          class="fail-dot"
+          :title="`The last run of ${panel.label} failed; showing its previous result`"
+        />
       </button>
+      <PanelMenu
+        v-if="menuOpen"
+        :items="menuItems"
+        :anchor="kebabButton"
+        @select="onMenuSelect"
+        @close="closeMenu"
+      />
     </div>
+    <PanelEditorPopover
+      v-if="editing"
+      :panel="panel"
+      :focus-label="focusLabelOnOpen"
+      @close="closeEditor"
+    />
     <template v-if="result">
       <div class="pct" :class="tone">{{ roundPct(reachedPctNow) }}<small>%</small></div>
       <div class="meta">
@@ -104,6 +174,7 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .swatch {
@@ -134,10 +205,23 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
   border-radius: 8px;
   display: grid;
   place-items: center;
+  cursor: pointer;
+  position: relative;
 }
 
-.kebab:disabled {
-  cursor: default;
+.kebab:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.fail-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--spread);
 }
 
 .pct {
