@@ -8,3 +8,6 @@
 # stays tracked; `git restore internal/webdist/dist` after local testing)
 /internal/webdist/dist/*
 !/internal/webdist/dist/index.html
+
+# internal working docs (specs, handoffs, mockups) stay local-only
+/docs/
