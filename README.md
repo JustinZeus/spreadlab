@@ -85,31 +85,14 @@ frontend embedded, serving the dashboard on `/`, the API under `/api`,
 and `/healthz`. A healthcheck is baked in (the binary probes its own
 `/healthz`; the distroless base has no shell).
 
-The production setup is a Portainer stack behind Caddy. The stack joins
-the reverse proxy's external docker network, so no ports are published;
-Caddy reaches the app at `spreadlab:8080` over that network:
+To run it:
 
-```yaml
-services:
-  spreadlab:
-    image: ghcr.io/justinzeus/spreadlab:latest
-    container_name: spreadlab
-    restart: unless-stopped
-    networks:
-      - web
-
-networks:
-  web:
-    external: true
+```sh
+docker run -p 8080:8080 ghcr.io/justinzeus/spreadlab:latest
 ```
 
-The network name must match the one Caddy actually uses (`docker network
-ls` on the server; here `web`). The Caddyfile entry itself is managed by
-hand on the server, not in this repo: add a site block for the public
-hostname that reverse-proxies to `spreadlab:8080`, and reload Caddy.
-
-To run the image anywhere else: `docker run -p 8080:8080
-ghcr.io/justinzeus/spreadlab:latest`.
+Behind a reverse proxy, attach the container to the proxy's docker
+network instead of publishing ports and point the proxy at port 8080.
 
 ## Project layout
 
