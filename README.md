@@ -7,6 +7,8 @@ An agent-based "what if" dashboard for a hard question: when harmful content
 school year group, where does a limited education budget actually make a
 difference?
 
+**Live demo:** <https://aios-demo.justinvisser.org>
+
 > **Illustrative, not validated.** spreadlab is a planning and discussion
 > aid. The model is a deliberately simple social-contagion simulation; its
 > numbers are not predictions about real schools, real platforms, or real
@@ -51,7 +53,7 @@ Early development; interface and API are not stable yet.
 - [x] Web frontend reproducing the three-scenario comparison from live data
 - [x] Interactive dashboard (controls, network view, spread animation)
 - [x] Single-binary deploy (embedded frontend), public Docker image
-- [ ] Hosted demo
+- [x] Hosted demo ([aios-demo.justinvisser.org](https://aios-demo.justinvisser.org))
 - [ ] Intervention optimisation under a budget
 
 ## Quick start (development)
