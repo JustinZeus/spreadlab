@@ -50,6 +50,73 @@ func DefaultConfig() Config {
 	}
 }
 
+// IntBounds is an inclusive allowed range for an integer Config field.
+type IntBounds struct {
+	Min int `json:"min"`
+	Max int `json:"max"`
+}
+
+// FloatBounds is an inclusive allowed range for a float Config field.
+type FloatBounds struct {
+	Min float64 `json:"min"`
+	Max float64 `json:"max"`
+}
+
+// Bounds gives the allowed range for every absolute Config field. These
+// are realism limits, not mathematical ones: a student does not keep 150
+// close friendships, and a guaranteed forward is not a plausible base
+// rate. numEducated and origin are relational (0..numStudents and
+// 0..numStudents-1) and therefore not listed; seeds are unrestricted.
+type Bounds struct {
+	NumStudents  IntBounds   `json:"numStudents"`
+	EdgesPerNode IntBounds   `json:"edgesPerNode"`
+	TriangleProb FloatBounds `json:"triangleProb"`
+	ForwardProb  FloatBounds `json:"forwardProb"`
+}
+
+// ConfigBounds returns the bounds the engine enforces. The frontend
+// receives this verbatim (with the default config) and drives its
+// sliders and clamping from the same numbers.
+func ConfigBounds() Bounds {
+	return Bounds{
+		NumStudents:  IntBounds{Min: 10, Max: 500},
+		EdgesPerNode: IntBounds{Min: 1, Max: 8},
+		TriangleProb: FloatBounds{Min: 0, Max: 1},
+		ForwardProb:  FloatBounds{Min: 0, Max: 0.9},
+	}
+}
+
+// ValidateConfig rejects configs outside ConfigBounds or with relational
+// fields out of range. Error messages contain the offending field's JSON
+// name; the frontend matches on it to mark the right control invalid.
+func ValidateConfig(config Config) error {
+	bounds := ConfigBounds()
+	if config.NumStudents < bounds.NumStudents.Min || config.NumStudents > bounds.NumStudents.Max {
+		return fmt.Errorf("scenario: need %d <= numStudents <= %d, got %d",
+			bounds.NumStudents.Min, bounds.NumStudents.Max, config.NumStudents)
+	}
+	if config.EdgesPerNode < bounds.EdgesPerNode.Min || config.EdgesPerNode > bounds.EdgesPerNode.Max {
+		return fmt.Errorf("scenario: need %d <= edgesPerNode <= %d, got %d",
+			bounds.EdgesPerNode.Min, bounds.EdgesPerNode.Max, config.EdgesPerNode)
+	}
+	if config.TriangleProb < bounds.TriangleProb.Min || config.TriangleProb > bounds.TriangleProb.Max {
+		return fmt.Errorf("scenario: need %v <= triangleProb <= %v, got %v",
+			bounds.TriangleProb.Min, bounds.TriangleProb.Max, config.TriangleProb)
+	}
+	if config.ForwardProb < bounds.ForwardProb.Min || config.ForwardProb > bounds.ForwardProb.Max {
+		return fmt.Errorf("scenario: need %v <= forwardProb <= %v, got %v",
+			bounds.ForwardProb.Min, bounds.ForwardProb.Max, config.ForwardProb)
+	}
+	if config.NumEducated < 0 || config.NumEducated > config.NumStudents {
+		return fmt.Errorf("scenario: need 0 <= numEducated <= %d students, got %d",
+			config.NumStudents, config.NumEducated)
+	}
+	if config.Origin < 0 || config.Origin >= config.NumStudents {
+		return fmt.Errorf("scenario: origin %d outside 0..%d", config.Origin, config.NumStudents-1)
+	}
+	return nil
+}
+
 // Result is the outcome of one scenario run.
 type Result struct {
 	Strategy       Strategy `json:"strategy"`
@@ -77,14 +144,8 @@ func GraphEdges(config Config) ([][2]int, error) {
 // cascade. Scenarios with the same config share the same world, so
 // comparing strategies compares only the lever.
 func RunScenario(config Config, strategy Strategy) (Result, error) {
-	if config.ForwardProb < 0 || config.ForwardProb > 1 {
-		return Result{}, fmt.Errorf("scenario: need 0 <= forwardProb <= 1, got %v", config.ForwardProb)
-	}
-	if config.Origin < 0 || config.Origin >= config.NumStudents {
-		return Result{}, fmt.Errorf("scenario: origin %d outside 0..%d", config.Origin, config.NumStudents-1)
-	}
-	if config.NumEducated < 0 {
-		return Result{}, fmt.Errorf("scenario: need numEducated >= 0, got %d", config.NumEducated)
+	if err := ValidateConfig(config); err != nil {
+		return Result{}, err
 	}
 
 	graph, err := HolmeKim(config.NumStudents, config.EdgesPerNode, config.TriangleProb, newRand(config.GraphSeed))

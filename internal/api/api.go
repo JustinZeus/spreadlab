@@ -11,6 +11,14 @@ import (
 	"github.com/JustinZeus/spreadlab/internal/engine"
 )
 
+// DefaultConfigResponse is the body of GET /api/config/default: the
+// default world plus the engine's field bounds, so the frontend drives
+// its controls and clamping from the same numbers the engine enforces.
+type DefaultConfigResponse struct {
+	Config engine.Config `json:"config"`
+	Bounds engine.Bounds `json:"bounds"`
+}
+
 // ComparisonResponse bundles what the dashboard needs to render one
 // comparison: the config that was run, echoed back so frontend state stays
 // honest, and one result per strategy.
@@ -53,7 +61,10 @@ func NewServer() http.Handler {
 }
 
 func handleDefaultConfig(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, engine.DefaultConfig())
+	writeJSON(w, http.StatusOK, DefaultConfigResponse{
+		Config: engine.DefaultConfig(),
+		Bounds: engine.ConfigBounds(),
+	})
 }
 
 func handleComparison(w http.ResponseWriter, r *http.Request) {

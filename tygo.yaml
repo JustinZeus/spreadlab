@@ -11,8 +11,9 @@ packages:
     include_files:
       - "api.go"
     frontmatter: |
-      import type { Config, Result, Strategy } from "./engine";
+      import type { Bounds, Config, Result, Strategy } from "./engine";
     type_mappings:
+      engine.Bounds: "Bounds"
       engine.Config: "Config"
       engine.Result: "Result"
       engine.Strategy: "Strategy"

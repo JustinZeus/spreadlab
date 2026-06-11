@@ -51,12 +51,15 @@ func TestDefaultConfigEndpoint(t *testing.T) {
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
 	}
-	var config engine.Config
-	if err := json.Unmarshal(recorder.Body.Bytes(), &config); err != nil {
+	var response DefaultConfigResponse
+	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
 		t.Fatal(err)
 	}
-	if config != engine.DefaultConfig() {
-		t.Errorf("served config %+v, want %+v", config, engine.DefaultConfig())
+	if response.Config != engine.DefaultConfig() {
+		t.Errorf("served config %+v, want %+v", response.Config, engine.DefaultConfig())
+	}
+	if response.Bounds != engine.ConfigBounds() {
+		t.Errorf("served bounds %+v, want %+v", response.Bounds, engine.ConfigBounds())
 	}
 }
 

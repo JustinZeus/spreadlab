@@ -28,6 +28,33 @@ export interface Config {
   educationSeed: number /* uint64 */; // used by the random strategy only
 }
 /**
+ * IntBounds is an inclusive allowed range for an integer Config field.
+ */
+export interface IntBounds {
+  min: number /* int */;
+  max: number /* int */;
+}
+/**
+ * FloatBounds is an inclusive allowed range for a float Config field.
+ */
+export interface FloatBounds {
+  min: number /* float64 */;
+  max: number /* float64 */;
+}
+/**
+ * Bounds gives the allowed range for every absolute Config field. These
+ * are realism limits, not mathematical ones: a student does not keep 150
+ * close friendships, and a guaranteed forward is not a plausible base
+ * rate. numEducated and origin are relational (0..numStudents and
+ * 0..numStudents-1) and therefore not listed; seeds are unrestricted.
+ */
+export interface Bounds {
+  numStudents: IntBounds;
+  edgesPerNode: IntBounds;
+  triangleProb: FloatBounds;
+  forwardProb: FloatBounds;
+}
+/**
  * Result is the outcome of one scenario run.
  */
 export interface Result {
