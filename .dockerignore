@@ -1,0 +1,12 @@
+# Keep the build context small and the image layers cache-friendly:
+# nothing here is needed to build the frontend or the binary.
+.git
+.github
+docs
+node_modules
+web/node_modules
+web/dist
+web/coverage
+dev.sh
+Dockerfile
+.dockerignore
