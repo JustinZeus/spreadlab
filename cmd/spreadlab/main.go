@@ -1,6 +1,7 @@
-// Command spreadlab serves the spreadlab API (and, from milestone 4, the
-// dashboard itself). The -table flag instead prints the three-scenario
-// comparison and exits, a quick engine sanity check.
+// Command spreadlab serves the dashboard and its API from one binary:
+// the embedded frontend on /, the API under /api, and a trivial
+// /healthz for container healthchecks. The -table flag instead prints
+// the three-scenario comparison and exits, a quick engine sanity check.
 package main
 
 import (
@@ -14,6 +15,7 @@ import (
 
 	"github.com/JustinZeus/spreadlab/internal/api"
 	"github.com/JustinZeus/spreadlab/internal/engine"
+	"github.com/JustinZeus/spreadlab/internal/webdist"
 )
 
 func main() {
@@ -29,8 +31,17 @@ func main() {
 		return
 	}
 
-	log.Printf("spreadlab API listening on http://%s", *addr)
-	if err := http.ListenAndServe(*addr, api.NewServer()); err != nil {
+	// One mux, one origin: the longer /api/ pattern wins over / for API
+	// calls, everything else falls through to the embedded frontend.
+	mux := http.NewServeMux()
+	mux.Handle("/api/", api.NewServer())
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.Handle("/", webdist.Handler())
+
+	log.Printf("spreadlab listening on http://%s", *addr)
+	if err := http.ListenAndServe(*addr, mux); err != nil {
 		log.Fatal(err)
 	}
 }

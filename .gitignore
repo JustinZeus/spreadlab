@@ -3,3 +3,8 @@
 
 # prettier cache (npm run format in web/ walks up here)
 /node_modules/
+
+# real frontend builds copied over the committed placeholder (index.html
+# stays tracked; `git restore internal/webdist/dist` after local testing)
+/internal/webdist/dist/*
+!/internal/webdist/dist/index.html
