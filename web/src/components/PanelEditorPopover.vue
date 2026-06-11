@@ -40,6 +40,45 @@ function setOverride(field: keyof Config, event: Event) {
   if (Number.isFinite(nextValue)) store.setPanelOverride(props.panel.id, field, nextValue)
 }
 
+// Native min/max hints from the served bounds; the store clamps anyway,
+// these just make the spinners stop at the right place. Relational
+// ceilings follow this panel's effective student count.
+function fieldMin(field: keyof Config): number | undefined {
+  const bounds = store.state.bounds
+  switch (field) {
+    case 'numStudents':
+      return bounds?.numStudents.min
+    case 'edgesPerNode':
+      return bounds?.edgesPerNode.min
+    case 'triangleProb':
+      return bounds?.triangleProb.min
+    case 'forwardProb':
+      return bounds?.forwardProb.min
+    default:
+      return 0
+  }
+}
+
+function fieldMax(field: keyof Config): number | undefined {
+  const bounds = store.state.bounds
+  switch (field) {
+    case 'numStudents':
+      return bounds?.numStudents.max
+    case 'edgesPerNode':
+      return bounds?.edgesPerNode.max
+    case 'triangleProb':
+      return bounds?.triangleProb.max
+    case 'forwardProb':
+      return bounds?.forwardProb.max
+    case 'numEducated':
+      return effectiveValue('numStudents')
+    case 'origin':
+      return effectiveValue('numStudents') - 1
+    default:
+      return undefined
+  }
+}
+
 function rename(event: Event) {
   const label = (event.target as HTMLInputElement).value.trim()
   if (label) store.renamePanel(props.panel.id, label)
@@ -123,6 +162,8 @@ onBeforeUnmount(() => {
         <input
           :id="`${panel.id}-${field}`"
           type="number"
+          :min="fieldMin(field)"
+          :max="fieldMax(field)"
           :value="effectiveValue(field)"
           :aria-invalid="offendingField === field || undefined"
           @change="setOverride(field, $event)"

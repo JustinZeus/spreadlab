@@ -1,14 +1,29 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSimStore, RUN_DEBOUNCE_MS } from '../useSimStore'
-import { ApiError, runScenario } from '@/lib/api'
+import { ApiError, fetchDefaultConfig, runScenario } from '@/lib/api'
 import type { ScenarioRequest, ScenarioResponse } from '@/types/api'
+import type { Bounds } from '@/types/engine'
 
 vi.mock('@/lib/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/api')>()
-  return { ...actual, runScenario: vi.fn<typeof actual.runScenario>() }
+  return {
+    ...actual,
+    runScenario: vi.fn<typeof actual.runScenario>(),
+    fetchDefaultConfig: vi.fn<typeof actual.fetchDefaultConfig>(),
+  }
 })
 
 const runScenarioMock = vi.mocked(runScenario)
+const fetchDefaultConfigMock = vi.mocked(fetchDefaultConfig)
+
+// Stand-in bounds matching the engine's real ones closely enough for the
+// clamping tests; the store treats them as opaque numbers either way.
+const TEST_BOUNDS: Bounds = {
+  numStudents: { min: 10, max: 500 },
+  edgesPerNode: { min: 1, max: 8 },
+  triangleProb: { min: 0, max: 1 },
+  forwardProb: { min: 0, max: 0.9 },
+}
 
 // The fake engine: numReached mirrors numEducated so tests can tell which
 // config produced a result, and the no-program panel runs the longest.
@@ -40,6 +55,11 @@ beforeEach(() => {
   vi.useFakeTimers()
   runScenarioMock.mockReset()
   runScenarioMock.mockImplementation(async (request) => fakeResponse(request))
+  fetchDefaultConfigMock.mockReset()
+  fetchDefaultConfigMock.mockImplementation(async () => {
+    const { deepfakeSchoolPreset } = await import('@/presets/deepfake-school')
+    return { config: deepfakeSchoolPreset.base, bounds: TEST_BOUNDS }
+  })
   window.history.replaceState(null, '', '/')
 })
 
@@ -269,5 +289,54 @@ describe('useSimStore panel management', () => {
     store.removePanel(secondPanel.id)
     expect(store.state.focusPanelId).toBeNull()
     expect(window.location.search).not.toContain('focus=')
+  })
+})
+
+describe('bounds clamping', () => {
+  it('stores the served bounds on initialize', async () => {
+    const store = createSimStore()
+    await store.initialize('')
+    expect(store.state.bounds).toEqual(TEST_BOUNDS)
+  })
+
+  it('clamps wild shared-link values instead of running them', async () => {
+    const store = createSimStore()
+    await store.initialize('?numStudents=5000&edgesPerNode=150&forwardProb=1&panel=Wild~random~numEducated:9999')
+
+    expect(store.state.base.numStudents).toBe(500)
+    expect(store.state.base.edgesPerNode).toBe(8)
+    expect(store.state.base.forwardProb).toBe(0.9)
+    expect(store.state.panels[0]!.overrides.numEducated).toBe(500)
+  })
+
+  it('clamps typed base values to the bounds', async () => {
+    const store = createSimStore()
+    await store.initialize('')
+
+    store.setBaseField('forwardProb', 1)
+    expect(store.state.base.forwardProb).toBe(0.9)
+    store.setBaseField('edgesPerNode', 150)
+    expect(store.state.base.edgesPerNode).toBe(8)
+  })
+
+  it('pulls relational fields down when numStudents shrinks', async () => {
+    const store = createSimStore()
+    await store.initialize('')
+    store.setBaseField('origin', 100)
+    store.setBaseField('numEducated', 110)
+
+    store.setBaseField('numStudents', 50)
+    expect(store.state.base.origin).toBe(49)
+    expect(store.state.base.numEducated).toBe(50)
+  })
+
+  it('starts without clamping when the bounds fetch fails', async () => {
+    fetchDefaultConfigMock.mockRejectedValue(new Error('offline'))
+    const store = createSimStore()
+    await store.initialize('')
+
+    expect(store.state.bounds).toBeNull()
+    store.setBaseField('forwardProb', 1)
+    expect(store.state.base.forwardProb).toBe(1) // the engine 400 backstops
   })
 })

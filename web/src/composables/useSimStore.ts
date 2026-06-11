@@ -1,11 +1,12 @@
 import { reactive } from 'vue'
-import { ApiError, runScenario } from '@/lib/api'
+import { ApiError, fetchDefaultConfig, runScenario } from '@/lib/api'
+import { clampConfig, clampConfigField } from '@/lib/bounds'
 import { roundPct } from '@/lib/format'
 import { graphKey } from '@/lib/graph'
 import { parseUrlState, serializeUrlState } from '@/lib/urlState'
 import { deepfakeSchoolPreset } from '@/presets/deepfake-school'
 import { MAX_PANELS, type PanelSpec, type StudyPreset } from '@/presets/types'
-import type { Config, Result, Strategy } from '@/types/engine'
+import type { Bounds, Config, Result, Strategy } from '@/types/engine'
 import { StrategyNone } from '@/types/engine'
 
 // The one store (spec section 4): a plain reactive module singleton, no
@@ -21,6 +22,10 @@ export type PlaybackSpeed = 0.5 | 1 | 2
 
 export interface SimState {
   base: Config
+  // The engine's field bounds, fetched at startup; null until they arrive
+  // (or when the fetch failed, in which case the engine's own validation
+  // is the backstop and nothing clamps client-side).
+  bounds: Bounds | null
   panels: PanelSpec[]
   resultsByPanelId: Record<string, Result>
   edgesByGraphHash: Record<string, number[][]>
@@ -52,6 +57,7 @@ function clonePanel(panel: PanelSpec): PanelSpec {
 export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
   const state: SimState = reactive({
     base: { ...preset.base },
+    bounds: null,
     panels: preset.panels.map(clonePanel),
     resultsByPanelId: {},
     edgesByGraphHash: {},
@@ -181,8 +187,29 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     field: FieldName,
     value: Config[FieldName],
   ) {
+    if (state.bounds) {
+      value = clampConfigField(field, value, state.base.numStudents, state.bounds)
+    }
     state.base[field] = value
+    if (field === 'numStudents') clampEverythingToBounds()
     scheduleRun()
+  }
+
+  // Re-clamp the base config and every panel override; needed when
+  // numStudents changes (the relational ceilings move) and when the
+  // bounds first arrive while the URL may have carried wild values.
+  function clampEverythingToBounds() {
+    const bounds = state.bounds
+    if (!bounds) return
+    state.base = clampConfig(state.base, bounds)
+    for (const panel of state.panels) {
+      const panelStudents = panel.overrides.numStudents ?? state.base.numStudents
+      for (const field of Object.keys(panel.overrides) as (keyof Config)[]) {
+        const override = panel.overrides[field]
+        if (override === undefined) continue
+        panel.overrides[field] = clampConfigField(field, override, panelStudents, bounds)
+      }
+    }
   }
 
   function addPanel(): PanelSpec | null {
@@ -253,6 +280,11 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
   ) {
     const panel = panelById(panelId)
     if (panel === undefined) return
+    if (state.bounds) {
+      const panelStudents =
+        field === 'numStudents' ? value : (panel.overrides.numStudents ?? state.base.numStudents)
+      value = clampConfigField(field, value, panelStudents, state.bounds)
+    }
     if (value === state.base[field]) {
       // Typing the base value back is "no override" (spec 5.7).
       delete panel.overrides[field]
@@ -281,10 +313,18 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
   }
 
   // Parse the opened URL (or fall back to the preset) and run every panel.
-  // The initial run is not debounced: nothing is on screen yet.
-  function initialize(
+  // The initial run is not debounced: nothing is on screen yet. The bounds
+  // arrive first so a shared link's wild values clamp instead of 400ing;
+  // if that fetch fails the app still starts, with the engine's own
+  // validation as the backstop.
+  async function initialize(
     search: string = typeof window === 'undefined' ? '' : window.location.search,
   ): Promise<void> {
+    try {
+      state.bounds = (await fetchDefaultConfig()).bounds
+    } catch {
+      state.bounds = null
+    }
     const parsed = parseUrlState(search, preset, createPanelId)
     if (parsed === null) {
       state.urlStateInvalid = true // preset defaults are already loaded
@@ -294,6 +334,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
       state.focusPanelId =
         parsed.focusIndex !== null ? (parsed.panels[parsed.focusIndex]?.id ?? null) : null
     }
+    clampEverythingToBounds()
     return runPanels(null)
   }
 

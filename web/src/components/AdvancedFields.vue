@@ -14,15 +14,46 @@ interface NumberFieldDef {
   field: keyof Config
   label: string
   min: number
+  max: number | undefined
   step: number
 }
 
-const numberFields: NumberFieldDef[] = [
-  { field: 'numStudents', label: CONFIG_FIELD_LABELS.numStudents, min: 2, step: 1 },
-  { field: 'edgesPerNode', label: CONFIG_FIELD_LABELS.edgesPerNode, min: 1, step: 1 },
-  { field: 'triangleProb', label: CONFIG_FIELD_LABELS.triangleProb, min: 0, step: 0.05 },
-  { field: 'origin', label: CONFIG_FIELD_LABELS.origin, min: 0, step: 1 },
-]
+// min/max come from the engine's served bounds; until they arrive the
+// inputs are unbounded and the store clamps nothing (the engine's own
+// validation backstops). origin's ceiling tracks numStudents.
+const numberFields = computed<NumberFieldDef[]>(() => {
+  const bounds = store.state.bounds
+  return [
+    {
+      field: 'numStudents',
+      label: CONFIG_FIELD_LABELS.numStudents,
+      min: bounds?.numStudents.min ?? 2,
+      max: bounds?.numStudents.max,
+      step: 1,
+    },
+    {
+      field: 'edgesPerNode',
+      label: CONFIG_FIELD_LABELS.edgesPerNode,
+      min: bounds?.edgesPerNode.min ?? 1,
+      max: bounds?.edgesPerNode.max,
+      step: 1,
+    },
+    {
+      field: 'triangleProb',
+      label: CONFIG_FIELD_LABELS.triangleProb,
+      min: bounds?.triangleProb.min ?? 0,
+      max: bounds?.triangleProb.max,
+      step: 0.05,
+    },
+    {
+      field: 'origin',
+      label: CONFIG_FIELD_LABELS.origin,
+      min: 0,
+      max: store.state.base.numStudents - 1,
+      step: 1,
+    },
+  ]
+})
 
 interface SeedFieldDef {
   field: keyof Config
@@ -39,7 +70,7 @@ const seedFields: SeedFieldDef[] = [
 const offendingField = computed(() => {
   const validationError = store.state.validationError
   if (!validationError) return null
-  const allFields = [...numberFields, ...seedFields].map(({ field }) => field)
+  const allFields = [...numberFields.value, ...seedFields].map(({ field }) => field)
   return allFields.find((field) => validationError.includes(field)) ?? null
 })
 
@@ -82,6 +113,7 @@ function rerollWorld() {
         <input
           type="number"
           :min="def.min"
+          :max="def.max"
           :step="def.step"
           :value="store.state.base[def.field]"
           :aria-invalid="offendingField === def.field || undefined"

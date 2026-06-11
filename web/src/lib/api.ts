@@ -1,5 +1,10 @@
 import type { Config } from '@/types/engine'
-import type { ComparisonResponse, ScenarioRequest, ScenarioResponse } from '@/types/api'
+import type {
+  ComparisonResponse,
+  DefaultConfigResponse,
+  ScenarioRequest,
+  ScenarioResponse,
+} from '@/types/api'
 
 // Thin typed wrappers around the JSON API. The types come from
 // src/types/, which is generated from the Go structs (single source of
@@ -44,8 +49,8 @@ async function requestJSON<T>(input: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function fetchDefaultConfig(): Promise<Config> {
-  return requestJSON<Config>('/api/config/default')
+export function fetchDefaultConfig(): Promise<DefaultConfigResponse> {
+  return requestJSON<DefaultConfigResponse>('/api/config/default')
 }
 
 export function runComparison(config: Config): Promise<ComparisonResponse> {
