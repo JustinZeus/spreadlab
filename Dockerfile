@@ -26,6 +26,9 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /spreadlab ./cmd/spread
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /spreadlab /spreadlab
 EXPOSE 8080
+# No shell or curl in distroless, so the healthcheck is the binary
+# probing its own /healthz (the -addr default targets localhost:8080).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD ["/spreadlab", "-check"]
 # 0.0.0.0, not the dev default localhost: inside a container the
 # loopback interface is unreachable from outside.
 ENTRYPOINT ["/spreadlab", "-addr", ":8080"]

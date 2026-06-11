@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/JustinZeus/spreadlab/internal/api"
 	"github.com/JustinZeus/spreadlab/internal/engine"
@@ -21,10 +23,21 @@ import (
 func main() {
 	addr := flag.String("addr", "localhost:8080", "address to serve the API on")
 	table := flag.Bool("table", false, "print the three-scenario comparison and exit")
+	check := flag.Bool("check", false, "probe a running server's /healthz and exit 0 or 1")
 	flag.Parse()
 
 	if *table {
 		if err := run(os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "spreadlab:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	// The runtime image has no shell or curl, so the compose healthcheck
+	// runs this same binary against the server instance.
+	if *check {
+		if err := probeHealthz(*addr); err != nil {
 			fmt.Fprintln(os.Stderr, "spreadlab:", err)
 			os.Exit(1)
 		}
@@ -44,6 +57,31 @@ func main() {
 	if err := http.ListenAndServe(*addr, mux); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// probeHealthz asks a running server whether it is healthy. The -addr
+// flag doubles as the target, so the healthcheck and the server agree
+// on the port by using the same default. A "localhost:8080" style addr
+// (or ":8080", where the host part is empty) becomes a loopback URL.
+func probeHealthz(addr string) error {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return fmt.Errorf("invalid addr %q: %w", addr, err)
+	}
+	if host == "" {
+		host = "localhost"
+	}
+
+	client := http.Client{Timeout: 3 * time.Second}
+	response, err := client.Get(fmt.Sprintf("http://%s/healthz", net.JoinHostPort(host, port)))
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("healthz answered %s", response.Status)
+	}
+	return nil
 }
 
 // run executes the three-scenario comparison in the default world and

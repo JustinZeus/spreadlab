@@ -49,8 +49,9 @@ Early development; interface and API are not stable yet.
 - [x] Simulation engine in Go (tested, deterministic, benchmarked)
 - [x] JSON API + TypeScript types generated from the Go structs
 - [x] Web frontend reproducing the three-scenario comparison from live data
-- [ ] Interactive dashboard (controls, network view, spread animation)
-- [ ] Single-binary deploy (embedded frontend), Docker image, hosted demo
+- [x] Interactive dashboard (controls, network view, spread animation)
+- [x] Single-binary deploy (embedded frontend), public Docker image
+- [ ] Hosted demo
 - [ ] Intervention optimisation under a budget
 
 ## Quick start (development)
@@ -74,6 +75,41 @@ cd web && npm run dev         # frontend on localhost:5173
 
 `go run ./cmd/spreadlab -table` prints the three-scenario comparison to the
 terminal as a quick engine sanity check.
+
+## Deploy
+
+Every merge to main publishes a public image to
+`ghcr.io/justinzeus/spreadlab`, tagged `latest` and the commit SHA (for
+rollbacks). The image is self-contained: one Go binary with the built
+frontend embedded, serving the dashboard on `/`, the API under `/api`,
+and `/healthz`. A healthcheck is baked in (the binary probes its own
+`/healthz`; the distroless base has no shell).
+
+The production setup is a Portainer stack behind Caddy. The stack joins
+the reverse proxy's external docker network, so no ports are published;
+Caddy reaches the app at `spreadlab:8080` over that network:
+
+```yaml
+services:
+  spreadlab:
+    image: ghcr.io/justinzeus/spreadlab:latest
+    container_name: spreadlab
+    restart: unless-stopped
+    networks:
+      - caddy
+
+networks:
+  caddy:
+    external: true
+```
+
+The network name must match the one Caddy actually uses (`docker network
+ls` on the server). The Caddyfile entry itself is managed by hand on the
+server, not in this repo: add a site block for the public hostname that
+reverse-proxies to `spreadlab:8080`, and reload Caddy.
+
+To run the image anywhere else: `docker run -p 8080:8080
+ghcr.io/justinzeus/spreadlab:latest`.
 
 ## Project layout
 
