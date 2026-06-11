@@ -77,7 +77,9 @@ func probeHealthz(addr string) error {
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	if err := response.Body.Close(); err != nil {
+		return err
+	}
 	if response.StatusCode >= 400 {
 		return fmt.Errorf("healthz answered %s", response.Status)
 	}
