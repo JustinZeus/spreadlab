@@ -96,17 +96,17 @@ services:
     container_name: spreadlab
     restart: unless-stopped
     networks:
-      - caddy
+      - web
 
 networks:
-  caddy:
+  web:
     external: true
 ```
 
 The network name must match the one Caddy actually uses (`docker network
-ls` on the server). The Caddyfile entry itself is managed by hand on the
-server, not in this repo: add a site block for the public hostname that
-reverse-proxies to `spreadlab:8080`, and reload Caddy.
+ls` on the server; here `web`). The Caddyfile entry itself is managed by
+hand on the server, not in this repo: add a site block for the public
+hostname that reverse-proxies to `spreadlab:8080`, and reload Caddy.
 
 To run the image anywhere else: `docker run -p 8080:8080
 ghcr.io/justinzeus/spreadlab:latest`.
