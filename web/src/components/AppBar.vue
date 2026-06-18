@@ -1,25 +1,27 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
-import AboutPopover from './AboutPopover.vue'
-import { useSimStore } from '@/composables/useSimStore'
+import { PAGE_TABS, type PageId } from '@/composables/usePage'
 import { useTheme } from '@/composables/useTheme'
 
-const { preset } = useSimStore()
+// The app bar carries the wordmark (a home link to the model), the page tabs
+// (Model plus the planned resource pages), and the theme + source controls.
+// The "illustrative, not validated" note now lives under the hero, so it is
+// present on the model page without crowding the bar.
+
+defineProps<{ activePage: PageId }>()
+const emit = defineEmits<{ navigate: [page: PageId] }>()
+
 const { theme, toggleTheme } = useTheme()
-
-const aboutOpen = ref(false)
-const badgeButton = ref<HTMLButtonElement | null>(null)
-
-function closeAbout() {
-  aboutOpen.value = false
-  void nextTick(() => badgeButton.value?.focus())
-}
 </script>
 
 <template>
   <header class="appbar">
     <div class="in">
-      <span class="wordmark">
+      <button
+        class="wordmark"
+        type="button"
+        aria-label="spreadlab home"
+        @click="emit('navigate', 'model')"
+      >
         <span class="glyph" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <circle cx="6" cy="6" r="2.2" />
@@ -29,23 +31,22 @@ function closeAbout() {
           </svg>
         </span>
         spreadlab
-      </span>
-      <span class="badge-anchor">
+      </button>
+
+      <nav class="tabs" aria-label="Pages">
         <button
-          ref="badgeButton"
-          class="badge"
+          v-for="tab in PAGE_TABS"
+          :key="tab.id"
           type="button"
-          :aria-expanded="aboutOpen"
-          @click="aboutOpen = !aboutOpen"
+          class="tab"
+          :class="{ active: activePage === tab.id }"
+          :aria-current="activePage === tab.id ? 'page' : undefined"
+          @click="emit('navigate', tab.id)"
         >
-          <svg class="ic" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 11v5M12 8v.01" />
-          </svg>
-          {{ preset.disclaimerShort }}
+          {{ tab.label }}
         </button>
-        <AboutPopover v-if="aboutOpen" :anchor="badgeButton" @close="closeAbout" />
-      </span>
+      </nav>
+
       <span class="grow" />
       <button
         class="iconbtn"
@@ -90,13 +91,13 @@ function closeAbout() {
 }
 
 .in {
-  max-width: 1240px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 28px;
   height: 56px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .wordmark {
@@ -106,6 +107,12 @@ function closeAbout() {
   font-weight: 650;
   font-size: 15.5px;
   letter-spacing: -0.01em;
+  color: var(--ink);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
 }
 
 .glyph {
@@ -127,28 +134,34 @@ function closeAbout() {
   stroke-linejoin: round;
 }
 
-.badge-anchor {
-  position: relative;
-  display: inline-flex;
-}
-
-.badge {
-  display: inline-flex;
+.tabs {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--ink-3);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px 12px 4px 9px;
-  cursor: pointer;
+  gap: 2px;
+  min-width: 0;
 }
 
-.badge svg.ic {
-  width: 14px;
-  height: 14px;
+.tab {
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--ink-3);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.tab.active {
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .grow {
@@ -165,6 +178,7 @@ function closeAbout() {
   display: grid;
   place-items: center;
   cursor: pointer;
+  flex: none;
 }
 
 .iconbtn:hover {
@@ -174,10 +188,22 @@ function closeAbout() {
 
 @media (max-width: 760px) {
   .in {
-    padding: 0 16px;
+    padding: 0 12px;
+    gap: 8px;
   }
 
-  .badge-anchor {
+  /* The wordmark text drops to the glyph; the tabs scroll horizontally. */
+  .wordmark {
+    font-size: 0;
+    gap: 0;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
     display: none;
   }
 }

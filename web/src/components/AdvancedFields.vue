@@ -97,7 +97,7 @@ function rerollWorld() {
 </script>
 
 <template>
-  <details class="adv" open>
+  <details class="adv">
     <summary>
       <svg class="ic chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
       Advanced
@@ -275,7 +275,8 @@ input[type='number'] {
   color: var(--ink);
 }
 
-@media (max-width: 760px) {
+/* Single column when the controls container is narrow (sidebar / mobile). */
+@container controls (max-width: 380px) {
   .grid {
     grid-template-columns: 1fr;
   }

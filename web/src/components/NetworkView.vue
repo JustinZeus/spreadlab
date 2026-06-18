@@ -166,6 +166,8 @@ const popDurationMs = computed(() => (ROUND_MS / store.state.speed) * 0.3)
   height: auto;
   display: block;
   margin-top: 4px;
+  /* viewBox + default preserveAspectRatio scales the graph to fit, so on
+     desktop it can fill the flex cell height (set below) without cropping. */
   /* A graph-seed reroll remounts the svg (keyed by graph hash); the new
      layout fades in (spec 5.3). Skipped under reduced motion globally. */
   animation: layout-fade 200ms ease-out;
@@ -203,6 +205,14 @@ const popDurationMs = computed(() => (ROUND_MS / store.state.speed) * 0.3)
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* Desktop: fill the panel's flex network area (the cell grows with the
+   viewport); the graph scales to fit, centred. */
+@media (min-width: 761px) {
+  .net {
+    height: 100%;
   }
 }
 </style>

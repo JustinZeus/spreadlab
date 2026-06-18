@@ -11,7 +11,10 @@ import { useSimStore } from '@/composables/useSimStore'
 
 // The modal docks a second PlayerBar over the same store; only the page
 // instance owns the global keyboard map so keys are not handled twice.
-const props = withDefaults(defineProps<{ globalKeys?: boolean }>(), { globalKeys: true })
+const props = withDefaults(defineProps<{ globalKeys?: boolean; wide?: boolean }>(), {
+  globalKeys: true,
+  wide: false,
+})
 
 const store = useSimStore()
 const playback = usePlayback()
@@ -76,7 +79,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="playerwrap">
-    <div class="player">
+    <div class="player" :class="{ wide }">
       <button
         class="iconbtn"
         type="button"
@@ -176,6 +179,12 @@ onBeforeUnmount(() => {
   box-shadow: var(--shadow);
   padding: 8px 18px 8px 10px;
   width: min(680px, 100%);
+}
+
+/* On the dashboard the player spans the full content width (the modal keeps
+   the centered pill). */
+.player.wide {
+  width: 100%;
 }
 
 .iconbtn {

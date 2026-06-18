@@ -348,6 +348,33 @@ const dimmed = computed(() => store.state.runState === 'running' && result.value
   }
 }
 
+/* Desktop: the panel is a flex column so the network area grows to fill the
+   2x2 grid cell; the graph scales with it (NetworkView height 100%). Mobile
+   keeps the natural width-based scaling (a flex-fill with no definite cell
+   height would collapse the SVG). */
+@media (min-width: 761px) {
+  .panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .netbtn {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .skeleton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .net-bone {
+    flex: 1;
+    aspect-ratio: auto;
+  }
+}
+
 @media (max-width: 760px) {
   /* 44 px touch target for the kebab (spec section 8). */
   .kebab {

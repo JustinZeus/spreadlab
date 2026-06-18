@@ -49,7 +49,7 @@ function closeAbout() {
         <template v-else>{{ segment.text }}</template>
       </template>
     </p>
-    <span class="mobile-note">
+    <span class="disclaimer-note">
       <button
         ref="noteButton"
         type="button"
@@ -103,8 +103,27 @@ p b.pending {
   color: var(--ink-4);
 }
 
-.mobile-note {
-  display: none;
+.disclaimer-note {
+  display: block;
+  position: relative;
+  margin-top: 10px;
+}
+
+.note-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-4);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.note-button svg.ic {
+  width: 14px;
+  height: 14px;
 }
 
 @media (max-width: 760px) {
@@ -114,29 +133,6 @@ p b.pending {
 
   p {
     font-size: 15px;
-  }
-
-  .mobile-note {
-    display: block;
-    position: relative;
-    margin-top: 10px;
-  }
-
-  .note-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12.5px;
-    color: var(--ink-4);
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-  }
-
-  .note-button svg.ic {
-    width: 14px;
-    height: 14px;
   }
 }
 </style>

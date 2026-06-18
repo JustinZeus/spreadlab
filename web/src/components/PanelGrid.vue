@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import ScenarioPanel from './ScenarioPanel.vue'
 import { useSimStore } from '@/composables/useSimStore'
 import { accentForPanel } from '@/lib/accents'
+import { MAX_PANELS } from '@/presets/types'
 
 const store = useSimStore()
 
@@ -16,30 +17,118 @@ const unreachable = computed(
 )
 
 const apiBaseUrl = `${window.location.origin}/api`
+
+const canAdd = computed(() => store.state.panels.length < MAX_PANELS)
+
+// Append a panel and open its editor (the + tile replaces the old toolbar
+// button).
+function addScenario() {
+  const added = store.addPanel()
+  if (added) store.state.editingPanelId = added.id
+}
+
+// Size each grid row to exactly half the visible grid height so the 2x2 is
+// always fully visible and a fifth scenario spills into a scrolling third
+// row. Only while the dashboard is locked to one screen (matches App.vue's
+// gate); otherwise the CSS fallback and natural flow apply.
+const gridElement = ref<HTMLElement | null>(null)
+const ROW_GAP_PX = 16
+const oneScreen = window.matchMedia('(min-width: 761px) and (min-height: 760px)')
+let rowObserver: ResizeObserver | null = null
+
+function syncRowHeight() {
+  const element = gridElement.value
+  if (!element) return
+  if (oneScreen.matches) {
+    const rowHeight = Math.max(150, Math.floor((element.clientHeight - ROW_GAP_PX) / 2))
+    element.style.setProperty('--row-h', `${rowHeight}px`)
+  } else {
+    element.style.removeProperty('--row-h')
+  }
+}
+
+onMounted(() => {
+  rowObserver = new ResizeObserver(syncRowHeight)
+  if (gridElement.value) rowObserver.observe(gridElement.value)
+  oneScreen.addEventListener('change', syncRowHeight)
+  syncRowHeight()
+})
+onBeforeUnmount(() => {
+  rowObserver?.disconnect()
+  oneScreen.removeEventListener('change', syncRowHeight)
+})
 </script>
 
 <template>
-  <div v-if="unreachable" class="unreachable" role="alert">
-    <p>
-      Could not reach the spreadlab API at <code>{{ apiBaseUrl }}</code>
-    </p>
-    <button class="retry" type="button" @click="store.retry()">Retry</button>
-  </div>
-  <div v-else class="panels">
-    <ScenarioPanel
-      v-for="(panel, panelIndex) in store.state.panels"
-      :key="panel.id"
-      :panel="panel"
-      :accent="accentForPanel(panelIndex)"
-    />
+  <div ref="gridElement" class="panelgrid">
+    <div v-if="unreachable" class="unreachable" role="alert">
+      <p>
+        Could not reach the spreadlab API at <code>{{ apiBaseUrl }}</code>
+      </p>
+      <button class="retry" type="button" @click="store.retry()">Retry</button>
+    </div>
+    <div v-else class="panels">
+      <ScenarioPanel
+        v-for="(panel, panelIndex) in store.state.panels"
+        :key="panel.id"
+        :panel="panel"
+        :accent="accentForPanel(panelIndex)"
+      />
+      <button v-if="canAdd" class="add-tile" type="button" @click="addScenario()">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Add scenario
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.panelgrid {
+  min-height: 0;
+}
+
 .panels {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: var(--row-h, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.add-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 180px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-4);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+
+.add-tile:hover {
+  border-color: var(--edu);
+  color: var(--edu);
+  background: var(--surface);
+}
+
+.add-tile svg.ic {
+  width: 46px;
+  height: 46px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
 }
 
 .unreachable {
@@ -72,10 +161,27 @@ const apiBaseUrl = `${window.location.origin}/api`
   cursor: pointer;
 }
 
+/* Desktop: the grid fills the height its parent gives it (App.vue makes the
+   grid a flex child) and scrolls internally past four scenarios. */
+@media (min-width: 761px) {
+  .panelgrid {
+    overflow-y: auto;
+    /* Reserve room so the scrollbar (overlay or classic) never sits over the
+       right column of graphs when a 5th scenario makes the grid scroll. */
+    padding-right: 14px;
+    scrollbar-gutter: stable;
+  }
+}
+
 @media (max-width: 760px) {
   .panels {
     grid-template-columns: 1fr;
+    grid-auto-rows: auto;
     gap: 14px;
+  }
+
+  .add-tile {
+    min-height: 120px;
   }
 }
 </style>

@@ -142,9 +142,13 @@ input[type='range']::-moz-range-thumb {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
 }
 
-@media (max-width: 760px) {
+/* Stack (label above the track) when the controls container is narrow,
+   e.g. inside the sidebar or on mobile. */
+@container controls (max-width: 380px) {
   .row {
     grid-template-columns: 1fr 78px;
+    gap: 8px 14px;
+    margin-top: 14px;
   }
 
   label {

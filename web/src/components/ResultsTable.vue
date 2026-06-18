@@ -12,6 +12,10 @@ const props = defineProps<{
   panels: PanelSpec[]
   resultsByPanelId: Record<string, Result>
   base: Config
+  // When shown inside an overlay (single-screen layout) the table renders
+  // directly, without the collapsing disclosure. Default keeps the inline
+  // disclosure used elsewhere.
+  embedded?: boolean
 }>()
 
 function numStudentsFor(panel: PanelSpec): number {
@@ -20,8 +24,13 @@ function numStudentsFor(panel: PanelSpec): number {
 </script>
 
 <template>
-  <details class="results">
-    <summary>
+  <component
+    :is="embedded ? 'div' : 'details'"
+    class="results"
+    :class="{ embedded }"
+    :open="embedded || undefined"
+  >
+    <summary v-if="!embedded">
       <svg class="ic chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
       Data table
     </summary>
@@ -53,12 +62,21 @@ function numStudentsFor(panel: PanelSpec): number {
         </tr>
       </tbody>
     </table>
-  </details>
+  </component>
 </template>
 
 <style scoped>
 .results {
   margin-top: 26px;
+}
+
+.results.embedded {
+  margin-top: 0;
+}
+
+.results.embedded table {
+  margin-top: 0;
+  width: 100%;
 }
 
 summary {
