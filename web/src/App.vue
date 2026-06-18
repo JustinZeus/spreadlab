@@ -163,15 +163,15 @@ onMounted(async () => {
     grid-column: 1;
     grid-row: 1;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
+    position: relative;
   }
 
-  /* The settings card fills the sidebar so its height matches the two-row
-     graph grid; it scrolls internally only if its own content is taller. */
+  /* The card absolutely fills the sidebar, so its own content never grows the
+     row: the graph grid defines the height, the sidebar matches it, and the
+     card scrolls internally if its content (e.g. Advanced expanded) is taller. */
   .sidebar :deep(.card) {
-    flex: 1;
-    min-height: 0;
+    position: absolute;
+    inset: 0;
     overflow-y: auto;
   }
 

@@ -33,7 +33,16 @@ const offendsProgramEffect = offends('programEffect')
 
 <template>
   <section class="card ctl" aria-label="World settings">
-    <h3>World</h3>
+    <div class="ctl-head">
+      <h3>World</h3>
+      <button class="reroll" type="button" title="Draw a new random world" @click="store.rerollSeeds()">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="3" />
+          <path d="M9 9h.01M15 15h.01M15 9h.01M9 15h.01" />
+        </svg>
+        Reroll world
+      </button>
+    </div>
     <p v-if="store.state.validationError" class="invalid-note" role="alert">
       {{ store.state.validationError }}
     </p>
@@ -122,12 +131,48 @@ const offendsProgramEffect = offends('programEffect')
   container-name: controls;
 }
 
+.ctl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 h3 {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-4);
+}
+
+.reroll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 11px;
+  cursor: pointer;
+}
+
+.reroll:hover {
+  border-color: var(--ink-4);
+  color: var(--ink);
+}
+
+.reroll svg.ic {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .group + .group {

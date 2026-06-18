@@ -16,8 +16,8 @@ export interface LayoutPoint {
   y: number
 }
 
-export const NETWORK_VIEW_WIDTH = 380
-export const NETWORK_VIEW_HEIGHT = 230
+export const NETWORK_VIEW_WIDTH = 340
+export const NETWORK_VIEW_HEIGHT = 270
 const LAYOUT_PADDING = 14
 const LAYOUT_TICKS = 300
 
@@ -38,29 +38,31 @@ export function layoutForGraph(config: Config, edges: number[][]): LayoutPoint[]
 
   const random = mulberry32(Number(config.graphSeed) >>> 0)
   const nodes: LayoutNode[] = Array.from({ length: config.numStudents }, (_, index) => {
-    // Seeded start positions in a wide disc; the forces do the rest.
+    // Seeded start positions in a balanced disc; the forces do the rest.
     const angle = random() * Math.PI * 2
     const radius = Math.sqrt(random())
-    return { index, x: Math.cos(angle) * radius * 150, y: Math.sin(angle) * radius * 60 }
+    return { index, x: Math.cos(angle) * radius * 120, y: Math.sin(angle) * radius * 90 }
   })
   const links: SimulationLinkDatum<LayoutNode>[] = edges.map((edge) => ({
     source: edge[0] ?? 0,
     target: edge[1] ?? 0,
   }))
 
-  // The vertical pull is stronger than the horizontal one, so the cloud
-  // settles into the panel's wide ellipse by itself; fitting then scales
-  // both axes uniformly, which keeps the spacing organic (anisotropic
-  // stretching reads as line patterns).
+  // A gentle horizontal pull with a stronger vertical one settles the cloud
+  // into a slightly wide blob (a softer version of the original ellipse) while
+  // staying organic: its hubs and clusters show, not a uniform disc. The
+  // charge, link and collision forces do the structural work; fitting then
+  // scales both axes uniformly, so the spacing stays organic (anisotropic
+  // stretching would read as line patterns).
   forceSimulation(nodes)
     .randomSource(random)
     .force(
       'link',
       forceLink<LayoutNode, SimulationLinkDatum<LayoutNode>>(links).distance(16).strength(0.3),
     )
-    .force('charge', forceManyBody().strength(-15))
-    .force('x', forceX(0).strength(0.028))
-    .force('y', forceY(0).strength(0.22))
+    .force('charge', forceManyBody().strength(-16))
+    .force('x', forceX(0).strength(0.04))
+    .force('y', forceY(0).strength(0.085))
     .force('collide', forceCollide(5.5))
     .stop()
     .tick(LAYOUT_TICKS)
@@ -82,6 +84,10 @@ export function layoutForGraph(config: Config, edges: number[][]): LayoutPoint[]
     x: offsetX + ((node.x ?? 0) - minX) * scale,
     y: offsetY + ((node.y ?? 0) - minY) * scale,
   }))
-  layoutCache.set(cacheKey, points)
+  // Only cache once the real edges are in. A reroll changes the config (and
+  // this cache key) immediately, before the new edges arrive from the API;
+  // computing then would cache a link-less, uniform-circle layout under this
+  // key and never recompute it. Without edges, recompute next time instead.
+  if (edges.length > 0) layoutCache.set(cacheKey, points)
   return points
 }

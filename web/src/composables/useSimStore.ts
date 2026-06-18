@@ -3,6 +3,7 @@ import { ApiError, fetchDefaultConfig, runScenario } from '@/lib/api'
 import { clampConfig, clampConfigField } from '@/lib/bounds'
 import { roundPct } from '@/lib/format'
 import { graphKey } from '@/lib/graph'
+import { freshSeed } from '@/lib/seed'
 import { parseUrlState, serializeUrlState } from '@/lib/urlState'
 import { deepfakeSchoolPreset } from '@/presets/deepfake-school'
 import { MAX_PANELS, type PanelSpec, type StudyPreset } from '@/presets/types'
@@ -44,6 +45,7 @@ export interface SimState {
   validationError: string | null // 400 from the engine, shown inline under the controls
   urlStateInvalid: boolean // the opened link held malformed state; preset shown instead
   announcement: string // text for the single polite live region (spec section 8)
+  pendingReplay: boolean // a reroll asked playback to restart from round 0 once the run lands
 }
 
 function createPanelId(): string {
@@ -74,6 +76,7 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     validationError: null,
     urlStateInvalid: false,
     announcement: '',
+    pendingReplay: false,
   })
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -193,6 +196,20 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     state.base[field] = value
     if (field === 'numStudents') clampEverythingToBounds()
     scheduleRun()
+  }
+
+  // Seeds name the random world. Rerolling one (or all) draws fresh values
+  // and asks playback to replay the spread from round 0 once the rerun lands.
+  const SEED_FIELDS = ['graphSeed', 'thresholdSeed', 'educationSeed'] as const
+
+  function rerollSeed(field: keyof Config) {
+    state.pendingReplay = true
+    setBaseField(field, freshSeed())
+  }
+
+  function rerollSeeds() {
+    state.pendingReplay = true
+    for (const field of SEED_FIELDS) setBaseField(field, freshSeed())
   }
 
   // Re-clamp the base config and every panel override; needed when
@@ -351,6 +368,8 @@ export function createSimStore(preset: StudyPreset = deepfakeSchoolPreset) {
     initialize,
     retry,
     setBaseField,
+    rerollSeed,
+    rerollSeeds,
     addPanel,
     duplicatePanel,
     removePanel,

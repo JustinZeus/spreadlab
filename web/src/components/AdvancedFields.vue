@@ -79,21 +79,6 @@ function setField(field: keyof Config, event: Event) {
   if (Number.isFinite(nextValue)) store.setBaseField(field, nextValue)
 }
 
-// Seeds are just names for worlds; a small range keeps the fields and
-// shared URLs readable while still giving plenty of distinct worlds.
-function freshSeed(): number {
-  const buffer = new Uint32Array(1)
-  crypto.getRandomValues(buffer)
-  return (buffer[0] ?? 0) % 10000
-}
-
-function reroll(field: keyof Config) {
-  store.setBaseField(field, freshSeed())
-}
-
-function rerollWorld() {
-  for (const { field } of seedFields) store.setBaseField(field, freshSeed())
-}
 </script>
 
 <template>
@@ -120,6 +105,13 @@ function rerollWorld() {
           @change="setField(def.field, $event)"
         />
       </label>
+    </div>
+
+    <div class="seeds-head">
+      <span class="seeds-title">Seeds</span>
+      <span class="seeds-note">labels for a random world, not counts</span>
+    </div>
+    <div class="grid">
       <span
         v-for="def in seedFields"
         :key="def.field"
@@ -128,20 +120,23 @@ function rerollWorld() {
       >
         <label class="seed">
           <span class="fl">{{ def.label }}</span>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            :value="store.state.base[def.field]"
-            :aria-invalid="offendingField === def.field || undefined"
-            @change="setField(def.field, $event)"
-          />
+          <span class="seedval">
+            <span class="hash" aria-hidden="true">#</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              :value="store.state.base[def.field]"
+              :aria-invalid="offendingField === def.field || undefined"
+              @change="setField(def.field, $event)"
+            />
+          </span>
         </label>
         <button
           class="dice"
           type="button"
           :aria-label="`Reroll ${def.label}`"
-          @click="reroll(def.field)"
+          @click="store.rerollSeed(def.field)"
         >
           <svg class="ic" viewBox="0 0 24 24">
             <rect x="4" y="4" width="16" height="16" rx="3" />
@@ -150,7 +145,6 @@ function rerollWorld() {
         </button>
       </span>
     </div>
-    <button class="reroll-world" type="button" @click="rerollWorld()">Reroll world</button>
   </details>
 </template>
 
@@ -226,6 +220,44 @@ details[open] .chevron {
   min-width: 0;
 }
 
+.seeds-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.seeds-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+.seeds-note {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--ink-4);
+}
+
+.seedval {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.hash {
+  color: var(--ink-4);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.seedval input[type='number'] {
+  width: 52px;
+}
+
 input[type='number'] {
   width: 72px;
   font: 600 13px/1.4 inherit;
@@ -256,23 +288,6 @@ input[type='number'] {
 .dice svg.ic {
   width: 14px;
   height: 14px;
-}
-
-.reroll-world {
-  margin-top: 12px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink-3);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 12px;
-  cursor: pointer;
-}
-
-.reroll-world:hover {
-  border-color: var(--ink-4);
-  color: var(--ink);
 }
 
 /* Single column when the controls container is narrow (sidebar / mobile). */

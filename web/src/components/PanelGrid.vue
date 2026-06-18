@@ -40,7 +40,12 @@ function syncRowHeight() {
   const element = gridElement.value
   if (!element) return
   if (oneScreen.matches) {
-    const rowHeight = Math.max(150, Math.floor((element.clientHeight - ROW_GAP_PX) / 2))
+    // clientHeight includes the container's padding (which gives the card
+    // shadows room); subtract it so two rows fit the content area exactly.
+    const style = getComputedStyle(element)
+    const padV = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)
+    const available = element.clientHeight - padV
+    const rowHeight = Math.max(150, Math.floor((available - ROW_GAP_PX) / 2))
     element.style.setProperty('--row-h', `${rowHeight}px`)
   } else {
     element.style.removeProperty('--row-h')
@@ -166,9 +171,10 @@ onBeforeUnmount(() => {
 @media (min-width: 761px) {
   .panelgrid {
     overflow-y: auto;
-    /* Reserve room so the scrollbar (overlay or classic) never sits over the
-       right column of graphs when a 5th scenario makes the grid scroll. */
-    padding-right: 14px;
+    /* Room so the card shadows are not clipped at the scroll edges; the right
+       also leaves the scrollbar gutter. syncRowHeight subtracts this padding
+       so the 2x2 still fits exactly. */
+    padding: 4px 14px 14px 6px;
     scrollbar-gutter: stable;
   }
 }

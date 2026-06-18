@@ -1,3 +1,4 @@
+import { watch } from 'vue'
 import { useSimStore, type SimStore } from './useSimStore'
 
 // Playback (spec 5.4): one global round drives every panel, the chart
@@ -141,6 +142,21 @@ export function createPlayback(store: SimStore = useSimStore()) {
     state.roundProgress = 0
     play()
   }
+
+  // A reroll (rerollSeed / rerollSeeds) asks for a fresh playthrough: once its
+  // debounced run lands (running -> idle), restart the spread from round 0.
+  watch(
+    () => state.runState,
+    (now, before) => {
+      if (!state.pendingReplay) return
+      if (now === 'idle' && before === 'running') {
+        state.pendingReplay = false
+        replay()
+      } else if (now === 'error') {
+        state.pendingReplay = false
+      }
+    },
+  )
 
   return {
     play,
