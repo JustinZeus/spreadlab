@@ -7,6 +7,9 @@ An agent-based "what if" dashboard for a hard question: when harmful content
 school year group, where does a limited education budget actually make a
 difference?
 
+It is the proof-of-concept tool for a university grant proposal on protecting
+minors from AI-generated non-consensual imagery in an open society.
+
 **Live demo:** <https://aios-demo.justinvisser.org>
 
 > **Illustrative, not validated.** spreadlab is a planning and discussion
