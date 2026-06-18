@@ -29,8 +29,8 @@ func TestScenarioEndpointReturnsResultAndTopology(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if response.Result.NumReached != 7 { // the pinned golden value
-		t.Errorf("NumReached = %d, want 7", response.Result.NumReached)
+	if response.Result.NumReached != 21 { // the pinned golden value (tuned default world)
+		t.Errorf("NumReached = %d, want 21", response.Result.NumReached)
 	}
 	if response.Config != request.Config {
 		t.Errorf("config not echoed: got %+v", response.Config)

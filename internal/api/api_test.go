@@ -81,9 +81,9 @@ func TestComparisonEndpointMatchesGoldenValues(t *testing.T) {
 	// The same golden values the engine tests pin; the API must not
 	// change them in transit.
 	wantReached := map[engine.Strategy]int{
-		engine.StrategyNone:          99,
-		engine.StrategyRandom:        70,
-		engine.StrategyMostConnected: 7,
+		engine.StrategyNone:          100,
+		engine.StrategyRandom:        83,
+		engine.StrategyMostConnected: 21,
 	}
 	if len(comparison.Results) != len(wantReached) {
 		t.Fatalf("got %d results, want %d", len(comparison.Results), len(wantReached))

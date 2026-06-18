@@ -23,13 +23,16 @@ func runAllStrategies(t *testing.T) map[Strategy]Result {
 }
 
 func TestRunScenarioGoldenReachValues(t *testing.T) {
-	// Pinned from the first verified run (2026-06-10). The prototype's
-	// figure showed 102/77/10 out of 120 (85%/64%/8%); ours is the same
-	// story with different dice.
+	// Pinned for the tuned default world (2026-06-18): a moderately novel
+	// fake, some ambient harm awareness, and a strong-but-imperfect program
+	// (programEffect 0.8), so educated students mostly refuse rather than
+	// never forwarding. The prototype's figure showed 102/77/10 (85/64/8);
+	// the story (no program >> random >> most-connected) is the same, the
+	// dice and the soft program differ.
 	wantReached := map[Strategy]int{
-		StrategyNone:          99, // 82%
-		StrategyRandom:        70, // 58%
-		StrategyMostConnected: 7,  // 6%
+		StrategyNone:          100, // 83%
+		StrategyRandom:        83,  // 69%
+		StrategyMostConnected: 21,  // 18%
 	}
 	results := runAllStrategies(t)
 	for strategy, result := range results {

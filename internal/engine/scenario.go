@@ -50,10 +50,10 @@ func DefaultConfig() Config {
 		EdgesPerNode:  3,
 		TriangleProb:  0.45,
 		ForwardProb:   0.38,
-		Novelty:       0, // behaviour-neutral until the model is tuned (slice 4)
-		HarmAwareness: 0, // "
+		Novelty:       0.3, // a moderately novel/shocking fake
+		HarmAwareness: 0.2, // some ambient AI-literacy / harm awareness in the year group
 		NumEducated:   36,
-		ProgramEffect: 1.0, // a perfect program: today's hard block, softened in slice 4
+		ProgramEffect: 0.8, // a strong but imperfect program: educated students mostly, not always, refuse
 		Origin:        0,
 		GraphSeed:     17,
 		ThresholdSeed: 2,

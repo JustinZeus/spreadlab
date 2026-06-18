@@ -7,7 +7,13 @@ import "testing"
 // the program scales an educated student) in terms of the weight constants,
 // so tuning the weights later does not silently break the relationships.
 func TestForwardChance(t *testing.T) {
-	base := DefaultConfig() // ForwardProb 0.38, novelty/harm 0, programEffect 1
+	// A neutral baseline (the tuned DefaultConfig now carries novelty, harm
+	// awareness and a soft program); these assertions pin the formula's
+	// shape, not the default values.
+	base := DefaultConfig()
+	base.Novelty = 0
+	base.HarmAwareness = 0
+	base.ProgramEffect = 1
 
 	t.Run("default not educated is the baseline", func(t *testing.T) {
 		if got := base.ForwardChance(false); got != base.ForwardProb {
