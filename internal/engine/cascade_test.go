@@ -28,11 +28,20 @@ func uniformThresholds(graph *Graph, value float64) EdgeThresholds {
 	return thresholds
 }
 
+// uniformChance gives every student the same forwarding chance.
+func uniformChance(numNodes int, value float64) []float64 {
+	chances := make([]float64, numNodes)
+	for node := range chances {
+		chances[node] = value
+	}
+	return chances
+}
+
 func TestRunCascadeSpreadsAlongOpenEdges(t *testing.T) {
 	graph := lineGraph(4)
 	thresholds := uniformThresholds(graph, 0.1) // 0.1 < 0.5: every edge forwards
 
-	result := RunCascade(graph, 0, 0.5, nil, thresholds)
+	result := RunCascade(graph, 0, uniformChance(4, 0.5), thresholds)
 
 	wantRounds := []int{0, 1, 2, 3} // one hop further each round
 	if !slices.Equal(result.ReachedAtRound, wantRounds) {
@@ -53,7 +62,7 @@ func TestRunCascadeThresholdBlocksOneDirection(t *testing.T) {
 	// matter: student 2 never gets the fake, so never forwards anything.
 	thresholds[[2]int{1, 2}] = 0.9
 
-	result := RunCascade(graph, 0, 0.5, nil, thresholds)
+	result := RunCascade(graph, 0, uniformChance(4, 0.5), thresholds)
 
 	wantRounds := []int{0, 1, NeverReached, NeverReached}
 	if !slices.Equal(result.ReachedAtRound, wantRounds) {
@@ -68,10 +77,12 @@ func TestRunCascadeEducatedReceivesButDoesNotForward(t *testing.T) {
 	graph := lineGraph(4)
 	thresholds := uniformThresholds(graph, 0.1)
 
-	result := RunCascade(graph, 0, 0.5, []int{1}, thresholds)
+	// Student 1 is educated by a full-strength program: forwarding chance 0.
+	chance := uniformChance(4, 0.5)
+	chance[1] = 0
+	result := RunCascade(graph, 0, chance, thresholds)
 
-	// Student 1 is educated: still receives the fake in round 1, but the
-	// chain stops there.
+	// Student 1 still receives the fake in round 1, but the chain stops there.
 	wantRounds := []int{0, 1, NeverReached, NeverReached}
 	if !slices.Equal(result.ReachedAtRound, wantRounds) {
 		t.Errorf("ReachedAtRound = %v, want %v", result.ReachedAtRound, wantRounds)

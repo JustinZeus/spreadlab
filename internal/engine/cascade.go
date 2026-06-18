@@ -40,14 +40,12 @@ type CascadeResult struct {
 
 // RunCascade spreads the fake from origin: in every round, each newly
 // reached student forwards to each neighbour whose edge threshold falls
-// below forwardProb. Educated students receive the fake but never forward
-// it; that is the entire effect of the education lever.
-func RunCascade(graph *Graph, origin int, forwardProb float64, educated []int, thresholds EdgeThresholds) CascadeResult {
-	isEducated := make([]bool, graph.NumNodes())
-	for _, student := range educated {
-		isEducated[student] = true
-	}
-
+// below that student's forwarding chance. forwardChance[student] already
+// encodes the education lever (an educated student's chance is scaled down,
+// to zero under a full-strength program), so the cascade has no education
+// special case; an educated student receives the fake like anyone else and
+// simply forwards it with a lower chance.
+func RunCascade(graph *Graph, origin int, forwardChance []float64, thresholds EdgeThresholds) CascadeResult {
 	reachedAtRound := make([]int, graph.NumNodes())
 	for node := range reachedAtRound {
 		reachedAtRound[node] = NeverReached
@@ -60,12 +58,10 @@ func RunCascade(graph *Graph, origin int, forwardProb float64, educated []int, t
 	for round := 1; len(frontier) > 0; round++ {
 		var nextFrontier []int
 		for _, forwarder := range frontier {
-			if isEducated[forwarder] {
-				continue // received the fake, refuses to pass it on
-			}
+			chance := forwardChance[forwarder]
 			for _, receiver := range graph.Neighbors(forwarder) {
 				alreadyReached := reachedAtRound[receiver] != NeverReached
-				forwards := thresholds[[2]int{forwarder, receiver}] < forwardProb
+				forwards := thresholds[[2]int{forwarder, receiver}] < chance
 				if !alreadyReached && forwards {
 					reachedAtRound[receiver] = round
 					numReached++

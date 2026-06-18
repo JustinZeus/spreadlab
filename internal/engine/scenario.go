@@ -25,9 +25,17 @@ type Config struct {
 	NumStudents  int     `json:"numStudents"`
 	EdgesPerNode int     `json:"edgesPerNode"` // attachment edges per new student (network density)
 	TriangleProb float64 `json:"triangleProb"` // chance to close a friend-of-a-friend triangle
-	ForwardProb  float64 `json:"forwardProb"`  // chance a student forwards the fake along an edge
-	NumEducated  int     `json:"numEducated"`  // students the education program reaches
-	Origin       int     `json:"origin"`       // student who first posts the fake
+
+	// Forwarding is an additive composite (see ForwardChance): a baseline
+	// propensity, raised by how novel/shocking the fake is, lowered by the
+	// year group's ambient harm awareness.
+	ForwardProb   float64 `json:"forwardProb"`   // baseline chance a student forwards the fake along an edge
+	Novelty       float64 `json:"novelty"`       // how novel/shocking the fake is (0..1); raises forwarding
+	HarmAwareness float64 `json:"harmAwareness"` // ambient AI-literacy / harm awareness in the year group (0..1); lowers forwarding
+
+	NumEducated   int     `json:"numEducated"`   // students the education program reaches
+	ProgramEffect float64 `json:"programEffect"` // how strongly the program suppresses an educated student's forwarding (0..1; 1 = never forwards)
+	Origin        int     `json:"origin"`        // student who first posts the fake
 
 	GraphSeed     uint64 `json:"graphSeed"`
 	ThresholdSeed uint64 `json:"thresholdSeed"`
@@ -42,12 +50,44 @@ func DefaultConfig() Config {
 		EdgesPerNode:  3,
 		TriangleProb:  0.45,
 		ForwardProb:   0.38,
+		Novelty:       0, // behaviour-neutral until the model is tuned (slice 4)
+		HarmAwareness: 0, // "
 		NumEducated:   36,
+		ProgramEffect: 1.0, // a perfect program: today's hard block, softened in slice 4
 		Origin:        0,
 		GraphSeed:     17,
 		ThresholdSeed: 2,
 		EducationSeed: 1,
 	}
+}
+
+// Forwarding-composite weights: how far each lever can move the baseline
+// forwarding probability. These are provisional, illustrative values, not
+// fitted to data; they are tuned for legible behaviour in slice 4.
+const (
+	noveltyWeight       = 0.30 // a maximally novel fake adds up to +0.30
+	harmAwarenessWeight = 0.40 // a maximally aware year group subtracts up to -0.40
+)
+
+// maxForwardChance caps the composite: even the most novel fake in the most
+// permissive world is never forwarded with certainty.
+const maxForwardChance = 0.95
+
+// ForwardChance is the probability that a student forwards the fake along one
+// friendship in one round: the additive composite at the heart of the model.
+// A baseline propensity is raised by the fake's novelty and lowered by the
+// year group's ambient harm awareness; a student the program reached then has
+// that propensity scaled down by the program's effect. educated reports
+// whether the education program reached this student.
+func (config Config) ForwardChance(educated bool) float64 {
+	propensity := config.ForwardProb +
+		noveltyWeight*config.Novelty -
+		harmAwarenessWeight*config.HarmAwareness
+	propensity = min(max(propensity, 0), maxForwardChance)
+	if educated {
+		propensity *= 1 - config.ProgramEffect
+	}
+	return propensity
 }
 
 // IntBounds is an inclusive allowed range for an integer Config field.
@@ -169,7 +209,20 @@ func RunScenario(config Config, strategy Strategy) (Result, error) {
 	if educated == nil {
 		educated = []int{} // a nil slice marshals to JSON null, not []
 	}
-	cascade := RunCascade(graph, config.Origin, config.ForwardProb, educated, thresholds)
+
+	// Fold the education lever into a per-student forwarding chance: an
+	// educated student's composite is scaled down by the program effect, so
+	// the cascade itself needs no special case for education.
+	isEducated := make([]bool, config.NumStudents)
+	for _, student := range educated {
+		isEducated[student] = true
+	}
+	forwardChance := make([]float64, config.NumStudents)
+	for student := range forwardChance {
+		forwardChance[student] = config.ForwardChance(isEducated[student])
+	}
+
+	cascade := RunCascade(graph, config.Origin, forwardChance, thresholds)
 	return Result{
 		Strategy:       strategy,
 		Educated:       educated,
