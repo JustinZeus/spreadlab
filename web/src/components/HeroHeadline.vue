@@ -70,7 +70,9 @@ function closeAbout() {
 
 <style scoped>
 .hero {
-  max-width: 760px;
+  max-width: 880px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 h1 {
