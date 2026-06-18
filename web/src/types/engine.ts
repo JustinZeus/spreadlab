@@ -20,8 +20,16 @@ export interface Config {
   numStudents: number /* int */;
   edgesPerNode: number /* int */; // attachment edges per new student (network density)
   triangleProb: number /* float64 */; // chance to close a friend-of-a-friend triangle
-  forwardProb: number /* float64 */; // chance a student forwards the fake along an edge
+  /**
+   * Forwarding is an additive composite (see ForwardChance): a baseline
+   * propensity, raised by how novel/shocking the fake is, lowered by the
+   * year group's ambient harm awareness.
+   */
+  forwardProb: number /* float64 */; // baseline chance a student forwards the fake along an edge
+  novelty: number /* float64 */; // how novel/shocking the fake is (0..1); raises forwarding
+  harmAwareness: number /* float64 */; // ambient AI-literacy / harm awareness in the year group (0..1); lowers forwarding
   numEducated: number /* int */; // students the education program reaches
+  programEffect: number /* float64 */; // how strongly the program suppresses an educated student's forwarding (0..1; 1 = never forwards)
   origin: number /* int */; // student who first posts the fake
   graphSeed: number /* uint64 */;
   thresholdSeed: number /* uint64 */;
@@ -53,6 +61,9 @@ export interface Bounds {
   edgesPerNode: IntBounds;
   triangleProb: FloatBounds;
   forwardProb: FloatBounds;
+  novelty: FloatBounds;
+  harmAwareness: FloatBounds;
+  programEffect: FloatBounds;
 }
 /**
  * Result is the outcome of one scenario run.

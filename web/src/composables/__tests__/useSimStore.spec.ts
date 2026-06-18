@@ -23,6 +23,9 @@ const TEST_BOUNDS: Bounds = {
   edgesPerNode: { min: 1, max: 8 },
   triangleProb: { min: 0, max: 1 },
   forwardProb: { min: 0, max: 0.9 },
+  novelty: { min: 0, max: 1 },
+  harmAwareness: { min: 0, max: 1 },
+  programEffect: { min: 0, max: 1 },
 }
 
 // The fake engine: numReached mirrors numEducated so tests can tell which

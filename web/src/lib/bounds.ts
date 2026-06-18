@@ -39,6 +39,12 @@ export function clampConfigField(
       return clampNumber(rounded, bounds.triangleProb.min, bounds.triangleProb.max)
     case 'forwardProb':
       return clampNumber(rounded, bounds.forwardProb.min, bounds.forwardProb.max)
+    case 'novelty':
+      return clampNumber(rounded, bounds.novelty.min, bounds.novelty.max)
+    case 'harmAwareness':
+      return clampNumber(rounded, bounds.harmAwareness.min, bounds.harmAwareness.max)
+    case 'programEffect':
+      return clampNumber(rounded, bounds.programEffect.min, bounds.programEffect.max)
     case 'numEducated':
       return clampNumber(rounded, 0, numStudents)
     case 'origin':
