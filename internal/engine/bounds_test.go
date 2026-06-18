@@ -29,6 +29,12 @@ func TestValidateConfigRejectsOutOfBounds(t *testing.T) {
 		{"triangle probability above one", func(c *Config) { c.TriangleProb = 1.1 }, "triangleProb"},
 		{"negative forward probability", func(c *Config) { c.ForwardProb = -0.1 }, "forwardProb"},
 		{"guaranteed forwarding", func(c *Config) { c.ForwardProb = 0.95 }, "forwardProb"},
+		{"negative novelty", func(c *Config) { c.Novelty = -0.1 }, "novelty"},
+		{"novelty above one", func(c *Config) { c.Novelty = 1.1 }, "novelty"},
+		{"negative harm awareness", func(c *Config) { c.HarmAwareness = -0.1 }, "harmAwareness"},
+		{"harm awareness above one", func(c *Config) { c.HarmAwareness = 1.1 }, "harmAwareness"},
+		{"negative program effect", func(c *Config) { c.ProgramEffect = -0.1 }, "programEffect"},
+		{"program effect above one", func(c *Config) { c.ProgramEffect = 1.1 }, "programEffect"},
 		{"negative education budget", func(c *Config) { c.NumEducated = -1 }, "numEducated"},
 		{"educating more students than exist", func(c *Config) { c.NumEducated = 121 }, "numEducated"},
 		{"negative origin", func(c *Config) { c.Origin = -1 }, "origin"},
@@ -59,6 +65,9 @@ func TestValidateConfigAcceptsBoundaryValues(t *testing.T) {
 	config.EdgesPerNode = bounds.EdgesPerNode.Max
 	config.ForwardProb = bounds.ForwardProb.Max
 	config.TriangleProb = bounds.TriangleProb.Max
+	config.Novelty = bounds.Novelty.Max
+	config.HarmAwareness = bounds.HarmAwareness.Max
+	config.ProgramEffect = bounds.ProgramEffect.Max
 	config.NumEducated = config.NumStudents
 	config.Origin = config.NumStudents - 1
 	if err := ValidateConfig(config); err != nil {

@@ -108,10 +108,13 @@ type FloatBounds struct {
 // rate. numEducated and origin are relational (0..numStudents and
 // 0..numStudents-1) and therefore not listed; seeds are unrestricted.
 type Bounds struct {
-	NumStudents  IntBounds   `json:"numStudents"`
-	EdgesPerNode IntBounds   `json:"edgesPerNode"`
-	TriangleProb FloatBounds `json:"triangleProb"`
-	ForwardProb  FloatBounds `json:"forwardProb"`
+	NumStudents   IntBounds   `json:"numStudents"`
+	EdgesPerNode  IntBounds   `json:"edgesPerNode"`
+	TriangleProb  FloatBounds `json:"triangleProb"`
+	ForwardProb   FloatBounds `json:"forwardProb"`
+	Novelty       FloatBounds `json:"novelty"`
+	HarmAwareness FloatBounds `json:"harmAwareness"`
+	ProgramEffect FloatBounds `json:"programEffect"`
 }
 
 // ConfigBounds returns the bounds the engine enforces. The frontend
@@ -119,10 +122,13 @@ type Bounds struct {
 // sliders and clamping from the same numbers.
 func ConfigBounds() Bounds {
 	return Bounds{
-		NumStudents:  IntBounds{Min: 10, Max: 500},
-		EdgesPerNode: IntBounds{Min: 1, Max: 8},
-		TriangleProb: FloatBounds{Min: 0, Max: 1},
-		ForwardProb:  FloatBounds{Min: 0, Max: 0.9},
+		NumStudents:   IntBounds{Min: 10, Max: 500},
+		EdgesPerNode:  IntBounds{Min: 1, Max: 8},
+		TriangleProb:  FloatBounds{Min: 0, Max: 1},
+		ForwardProb:   FloatBounds{Min: 0, Max: 0.9},
+		Novelty:       FloatBounds{Min: 0, Max: 1},
+		HarmAwareness: FloatBounds{Min: 0, Max: 1},
+		ProgramEffect: FloatBounds{Min: 0, Max: 1},
 	}
 }
 
@@ -146,6 +152,18 @@ func ValidateConfig(config Config) error {
 	if config.ForwardProb < bounds.ForwardProb.Min || config.ForwardProb > bounds.ForwardProb.Max {
 		return fmt.Errorf("scenario: need %v <= forwardProb <= %v, got %v",
 			bounds.ForwardProb.Min, bounds.ForwardProb.Max, config.ForwardProb)
+	}
+	if config.Novelty < bounds.Novelty.Min || config.Novelty > bounds.Novelty.Max {
+		return fmt.Errorf("scenario: need %v <= novelty <= %v, got %v",
+			bounds.Novelty.Min, bounds.Novelty.Max, config.Novelty)
+	}
+	if config.HarmAwareness < bounds.HarmAwareness.Min || config.HarmAwareness > bounds.HarmAwareness.Max {
+		return fmt.Errorf("scenario: need %v <= harmAwareness <= %v, got %v",
+			bounds.HarmAwareness.Min, bounds.HarmAwareness.Max, config.HarmAwareness)
+	}
+	if config.ProgramEffect < bounds.ProgramEffect.Min || config.ProgramEffect > bounds.ProgramEffect.Max {
+		return fmt.Errorf("scenario: need %v <= programEffect <= %v, got %v",
+			bounds.ProgramEffect.Min, bounds.ProgramEffect.Max, config.ProgramEffect)
 	}
 	if config.NumEducated < 0 || config.NumEducated > config.NumStudents {
 		return fmt.Errorf("scenario: need 0 <= numEducated <= %d students, got %d",
