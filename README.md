@@ -24,26 +24,34 @@ the *same* outbreak in the *same* simulated social network under different
 education strategies, so the only thing that changes is who gets educated.
 With the default world (120 students, educate 30% of them):
 
-| Strategy                   | Reached by the fake |
-| -------------------------- | ------------------- |
-| No program                 | 82%                 |
-| Educate 30% at random      | 58%                 |
-| Educate the 30% best-connected | 6%              |
+| Strategy                       | Reached by the fake |
+| ------------------------------ | ------------------- |
+| No program                     | 83%                 |
+| Educate 30% at random          | 69%                 |
+| Educate the 30% best-connected | 18%                 |
 
-Same budget, different targeting, an order-of-magnitude difference. Making
-that lever visible (and later: searching for the best intervention under a
-budget) is the point of the tool.
+Same budget, very different outcomes: educating at random barely dents the
+spread, while educating the best-connected students contains it to under a
+fifth of the school. Who you teach matters more than how many. Making that
+lever visible (and later: searching for the best intervention under a budget)
+is the point of the tool.
 
 ## How the model works
 
 - **Network**: Holme-Kim preferential attachment with triangle closure
   (Holme & Kim, 2002), producing the hubs and clustered friend groups of
   real social networks; a port of networkx's `powerlaw_cluster_graph`.
-- **Spread**: an independent cascade (Kempe, Kleinberg & Tardos, 2003);
-  each directed edge gets one random forwarding draw, shared across all
-  scenarios, so strategies are compared in the same world.
-- **Education lever**: an educated student still receives the fake but
-  never forwards it. Strategies: no program, uniform random, most-connected.
+- **Spread**: an independent cascade (Kempe, Kleinberg & Tardos, 2003). Each
+  student's chance of forwarding is a literature-grounded composite: a baseline
+  rate, raised by how novel or shocking the fake is, lowered by the year
+  group's ambient harm awareness. Per-edge random draws are shared across all
+  scenarios, so strategies are compared in the same world. Because
+  deepfake-specific data are scarce, the parameters are sensitivity ranges
+  rather than fitted values, drawn from the project team's literature review.
+- **Education lever**: the program cuts an educated student's forwarding
+  probability by its effect size (a strong but imperfect reduction, not a
+  perfect wall). Strategies pick who is educated: no program, uniform random,
+  or the most-connected students.
 - **Determinism**: every source of randomness flows from seeds in the
   config; identical configs produce identical results, pinned by tests.
 
@@ -137,6 +145,16 @@ proposal on AI in an open society; the model semantics were ported from the
 Python prototype used in that project's pitch. The subject is handled from
 the prevention side only: the tool models how harmful content spreads and
 what education changes, nothing about creating such content.
+
+The model's diffusion and education parameters were sourced by the project
+team from open-access literature on misinformation spread, complex contagion,
+peer aggression, and comprehensive sexuality education.
+
+This public demo is the accessible, intuition-building layer of the proposed
+research. The funded project would build the full instrument behind it:
+calibrating the model to real-school data, incorporating the complete
+literature parameter set, and searching for the best intervention under a
+budget.
 
 References: P. Holme & B. J. Kim, *Growing scale-free networks with tunable
 clustering* (Phys. Rev. E 65, 2002). D. Kempe, J. Kleinberg & E. Tardos,

@@ -13,12 +13,13 @@ export const deepfakeSchoolPreset: StudyPreset = {
   disclaimerShort: 'Illustrative model, not validated',
   disclaimerLong:
     'spreadlab runs a seeded agent-based toy simulation: a synthetic ' +
-    'friendship network of one school year group, a fixed chance to forward ' +
-    'the fake along each friendship per round, and an education program that ' +
-    'teaches some students to refuse. Its parameters are chosen for ' +
-    'illustration, not fitted to data, so it is not a validated prediction ' +
-    'of any real school. Use it to build intuition about who to educate, ' +
-    'not to forecast outcomes.',
+    'friendship network of one school year group, a chance to forward the ' +
+    'fake along each friendship that rises with how novel it is and falls ' +
+    'with the ambient harm awareness, and an education program that strongly ' +
+    'but imperfectly reduces forwarding for educated students. Its parameters ' +
+    'are illustrative sensitivity ranges, not fitted to data, so it is not a ' +
+    'validated prediction of any real school. Use it to build intuition about ' +
+    'who to educate, not to forecast outcomes.',
   readingCaption:
     'Each dot is one student in the same simulated year group. Every scenario ' +
     'runs the identical school; only the education program differs.',
