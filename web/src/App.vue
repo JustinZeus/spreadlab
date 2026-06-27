@@ -8,6 +8,7 @@ import FocusModal from '@/components/FocusModal.vue'
 import FooterDisclaimer from '@/components/FooterDisclaimer.vue'
 import HeroHeadline from '@/components/HeroHeadline.vue'
 import LegendRow from '@/components/LegendRow.vue'
+import MethodPage from '@/components/MethodPage.vue'
 import MobileScoreStrip from '@/components/MobileScoreStrip.vue'
 import NodeTooltip from '@/components/NodeTooltip.vue'
 import OverlayCard from '@/components/OverlayCard.vue'
@@ -74,6 +75,7 @@ onMounted(async () => {
           </div>
         </div>
       </template>
+      <MethodPage v-else-if="activePage === 'explainer'" />
       <PlaceholderPage v-else :page="activePage" />
     </main>
     <FooterDisclaimer />
