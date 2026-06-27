@@ -414,9 +414,23 @@ const references: Reference[] = [
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  max-width: 820px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 8px 2px 56px;
+  padding: 8px 4px 56px;
+}
+
+/* The container is wide so the page breathes and the sources table has room,
+   but running prose keeps a comfortable reading measure rather than stretching
+   to the full width. The table, references, and section rules still span the
+   full container. */
+.lede,
+.block,
+section > h2,
+section > .sub,
+.strategies,
+.refs,
+.closing {
+  max-width: 760px;
 }
 
 .lede {
@@ -536,8 +550,23 @@ code {
 .table-scroll {
   margin-top: 16px;
   overflow-x: auto;
+  /* Keep the horizontal scrollbar clear of the last row instead of letting it
+     overlap the text; the scrollbar renders in this reserved strip. */
+  padding-bottom: 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
+  /* A thin, themed scrollbar that stays inside the reserved strip. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-4) transparent;
+}
+
+.table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--ink-4);
+  border-radius: 999px;
 }
 
 table {
