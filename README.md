@@ -46,7 +46,7 @@ is the point of the tool.
   rate, raised by how novel or shocking the fake is, lowered by the year
   group's ambient harm awareness. Per-edge random draws are shared across all
   scenarios, so strategies are compared in the same world. Because
-  deepfake-specific data are scarce, the parameters are sensitivity ranges
+  deepfake-specific data are scarce, the parameters are illustrative values
   rather than fitted values, drawn from the project team's literature review.
 - **Education lever**: the program cuts an educated student's forwarding
   probability by its effect size (a strong but imperfect reduction, not a

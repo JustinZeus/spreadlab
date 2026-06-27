@@ -17,7 +17,7 @@ export const deepfakeSchoolPreset: StudyPreset = {
     'fake along each friendship that rises with how novel it is and falls ' +
     'with the ambient harm awareness, and an education program that strongly ' +
     'but imperfectly reduces forwarding for educated students. Its parameters ' +
-    'are illustrative sensitivity ranges, not fitted to data, so it is not a ' +
+    'are illustrative values, not fitted to data, so it is not a ' +
     'validated prediction of any real school. Use it to build intuition about ' +
     'who to educate, not to forecast outcomes.',
   readingCaption:

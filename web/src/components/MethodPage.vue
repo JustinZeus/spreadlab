@@ -28,7 +28,7 @@ const parameterSources: ParameterSource[] = [
   {
     name: 'Baseline forwarding',
     status: 'live',
-    role: 'Each student’s base chance of forwarding the fake along a friendship after seeing it. Treated as a low / medium / high sensitivity range, not a fitted fact, because deepfake-specific adolescent diffusion data are scarce.',
+    role: 'Each student’s base chance of forwarding the fake along a friendship after seeing it. Treated as an illustrative, uncertain value, not a fitted fact, because deepfake-specific adolescent diffusion data are scarce.',
     sources: [
       'Kim et al. (2023), comprehensive sexuality education meta-analysis',
       'Brigham et al. (2024), perceptions of AI-generated non-consensual imagery',
@@ -54,7 +54,7 @@ const parameterSources: ParameterSource[] = [
   {
     name: 'Program effect (the education lever)',
     status: 'live',
-    role: 'Applies education as a strong but imperfect reduction in an educated student’s forwarding probability. Explored as a sensitivity range, because intervention effect sizes vary and no deepfake-specific causal estimate exists.',
+    role: 'Applies education as a strong but imperfect reduction in an educated student’s forwarding probability. Treated as illustrative and uncertain, because intervention effect sizes vary and no deepfake-specific causal estimate exists.',
     sources: [
       'Kim et al. (2023), comprehensive sexuality education meta-analysis',
       'Kamaruddin et al. (2023), cyberbullying intervention meta-analysis',
@@ -214,7 +214,7 @@ const references: Reference[] = [
       </p>
       <p class="disclaimer" role="note">
         <strong>Illustrative, not validated.</strong> spreadlab is a planning and discussion aid,
-        not a prediction. Its parameters are explored as sensitivity ranges drawn from adjacent
+        not a prediction. Its parameters are illustrative values drawn from adjacent
         literatures, not fitted to real-school data, so its numbers must not be read as forecasts
         about any real school, platform, or incident.
       </p>
@@ -323,12 +323,12 @@ const references: Reference[] = [
       </div>
 
       <div class="block">
-        <h3>Details: parameters as sensitivity ranges, not fitted values</h3>
+        <h3>Details: parameters are illustrative, not fitted values</h3>
         <p>
           Because direct empirical data on adolescent sexualized deepfake diffusion are still
           scarce, the model does not bake in point estimates. The curated levers (baseline
-          forwarding, novelty, harm awareness, program effect) are explored as low / medium / high
-          ranges drawn from adjacent open-access literatures on misinformation spread, complex
+          forwarding, novelty, harm awareness, program effect) are illustrative values you can vary,
+          drawn from adjacent open-access literatures on misinformation spread, complex
           contagion, peer aggression, cyberbullying interventions, and comprehensive sexuality
           education. The remaining literature parameters are documented and reserved for the
           calibrated instrument the grant would fund. The list below maps each parameter to its
