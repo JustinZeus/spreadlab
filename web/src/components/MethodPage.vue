@@ -419,19 +419,8 @@ const references: Reference[] = [
   padding: 8px 4px 56px;
 }
 
-/* The container is wide so the page breathes and the sources table has room,
-   but running prose keeps a comfortable reading measure rather than stretching
-   to the full width. The table, references, and section rules still span the
-   full container. */
-.lede,
-.block,
-section > h2,
-section > .sub,
-.strategies,
-.refs,
-.closing {
-  max-width: 760px;
-}
+/* Prose spans the full container width, flush with the sources table, so the
+   text and the table share the same left and right edges. */
 
 .lede {
   margin-bottom: 28px;
