@@ -33,7 +33,7 @@ function addScenario() {
 // gate); otherwise the CSS fallback and natural flow apply.
 const gridElement = ref<HTMLElement | null>(null)
 const ROW_GAP_PX = 16
-const oneScreen = window.matchMedia('(min-width: 761px) and (min-height: 760px)')
+const oneScreen = window.matchMedia('(min-width: 761px) and (min-height: 1000px)')
 let rowObserver: ResizeObserver | null = null
 
 function syncRowHeight() {

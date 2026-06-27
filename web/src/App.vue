@@ -188,10 +188,11 @@ onMounted(async () => {
   }
 }
 
-/* Snap the dashboard to one screen when the window is tall enough; the graph
-   grid takes the leftover height. Short windows fall back to normal scroll
-   so nothing clips. */
-@media (min-width: 761px) and (min-height: 760px) {
+/* Snap the dashboard to one screen only when the window is tall enough to fit
+   the graph grid; the grid takes the leftover height. Below this the panels
+   would be squeezed until the network graphs collapse, so shorter windows
+   (e.g. 1080p at 100% with browser chrome) fall back to normal scroll. */
+@media (min-width: 761px) and (min-height: 1000px) {
   .shell {
     height: 100dvh;
     display: flex;

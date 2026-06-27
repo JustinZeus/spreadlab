@@ -7,7 +7,7 @@ import type { StudyPreset } from './types'
 export const deepfakeSchoolPreset: StudyPreset = {
   headline: 'How a non‑consensual deepfake spreads through a school',
   narrative:
-    'One simulated year group, 120 students. Educate the same 30% of them, ' +
+    'One simulated year group, 120 students. Educate the same share (30%) of them, ' +
     'but change who: the fake reaches {0} of the school with no program, ' +
     '{1} educating at random, and {2} educating the best‑connected students.',
   disclaimerShort: 'Illustrative model, not validated',
