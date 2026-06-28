@@ -162,4 +162,4 @@ clustering* (Phys. Rev. E 65, 2002). D. Kempe, J. Kleinberg & E. Tardos,
 
 ## License
 
-[MIT](LICENSE)
+[AGPL-3.0](LICENSE)
